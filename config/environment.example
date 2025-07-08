@@ -1,0 +1,38 @@
+# Пример переменных окружения для навыка Алисы
+# Скопируйте этот файл в .env и настройте значения
+
+# Основные настройки
+NODE_ENV=development
+PORT=3000
+
+# Идентификатор навыка Алисы (получается после создания в Яндекс.Диалогах)
+ALICE_SKILL_ID=your_skill_id_here
+
+# Уровень логирования (error, warn, info, debug)
+LOG_LEVEL=info
+
+# API настройки
+API_BASE_URL=http://localhost:3000
+
+# Аналитика (true/false)
+ANALYTICS_ENABLED=false
+
+# Настройки для production
+# NODE_ENV=production
+# PORT=443
+# API_BASE_URL=https://your-domain.com
+
+# ========================================
+# Инструкции по настройке:
+# ========================================
+
+# 1. Скопируйте этот файл:
+#    cp config/environment.example .env
+
+# 2. Откройте .env и замените your_skill_id_here 
+#    на реальный ID навыка из Яндекс.Диалогов
+
+# 3. При деплое на production установите:
+#    NODE_ENV=production
+#    PORT=443 (или тот порт, который использует ваш сервер)
+#    API_BASE_URL=https://your-domain.com 
