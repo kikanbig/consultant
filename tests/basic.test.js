@@ -111,7 +111,7 @@ describe('Навык Алисы - Базовые тесты', () => {
     const request = createTestRequest('расскажи про погоду');
     const response = await handleRequest(request);
     
-    expect(response.response.text).toContain('не понял');
+    expect(response.response.text).toContain('Не понял');
     expect(response.response.end_session).toBe(false);
   });
 

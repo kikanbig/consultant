@@ -3,7 +3,9 @@ function generateResponse(text, endSession = false, additionalData = {}) {
   const response = {
     response: {
       text: text,
-      end_session: endSession
+      end_session: endSession,
+      // Поле для сигнала о том, что навык активно слушает
+      should_listen: !endSession
     },
     version: '1.0'
   };
