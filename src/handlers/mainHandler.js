@@ -31,6 +31,9 @@ async function handleRequest(body) {
     case 'category_info':
       return handleCategoryInfo(request.command);
     
+    case 'detailed_info':
+      return handleDetailedInfo(request.command);
+    
     case 'product_search':
       return handleProductSearch(request.command);
     
@@ -105,6 +108,48 @@ function handleCategoryInfo(command) {
         { title: "Цены", hide: true },
         { title: "Другая категория", hide: true },
         { title: "Консультант", hide: true }
+      ]
+    }
+  );
+}
+
+// Детальная информация о товарах категории
+function handleDetailedInfo(command) {
+  const category = extractCategory(command);
+  
+  if (!category) {
+    return generateResponse(
+      "О какой категории товаров вы хотите узнать подробности? Скажите, например: 'подробнее о диванах' или 'все модели кроватей'.",
+      false,
+      {
+        buttons: [
+          { title: "Подробнее о диванах", hide: true },
+          { title: "Все модели кроватей", hide: true },
+          { title: "Характеристики столов", hide: true }
+        ]
+      }
+    );
+  }
+  
+  const products = getProductsByCategory(category);
+  
+  if (products.length === 0) {
+    return generateResponse(
+      `К сожалению, подробной информации о категории "${category}" пока нет.`,
+      false
+    );
+  }
+  
+  const detailedInfo = generateDetailedCategoryDescription(category, products);
+  
+  return generateResponse(
+    detailedInfo,
+    false,
+    {
+      buttons: [
+        { title: "Акции", hide: true },
+        { title: "Консультант", hide: true },
+        { title: "Другая категория", hide: true }
       ]
     }
   );
@@ -242,6 +287,50 @@ function generateCategoryDescription(category, products) {
   };
   
   return descriptions[category] || `Доступно ${products.length} товаров в данной категории.`;
+}
+
+// Генерация детального описания товаров категории
+function generateDetailedCategoryDescription(category, products) {
+  if (products.length === 0) return "Товары в данной категории отсутствуют.";
+  
+  let description = `В категории ${getCategoryName(category)} представлено ${products.length} товаров:\n\n`;
+  
+  products.slice(0, 3).forEach((product, index) => {
+    description += `${index + 1}. ${product.name}\n`;
+    description += `   Цена: ${product.price.toLocaleString()}₽\n`;
+    description += `   ${product.description}\n`;
+    description += `   Размеры: ${product.dimensions}\n`;
+    description += `   Материал: ${product.material}\n`;
+    if (product.colors.length > 0) {
+      description += `   Цвета: ${product.colors.join(', ')}\n`;
+    }
+    if (product.features.length > 0) {
+      description += `   Особенности: ${product.features.join(', ')}\n`;
+    }
+    if (product.promotions.length > 0) {
+      description += `   🔥 Акция: ${product.promotions.join(', ')}\n`;
+    }
+    description += '\n';
+  });
+  
+  if (products.length > 3) {
+    description += `И еще ${products.length - 3} моделей. Спросите про конкретную модель или обратитесь к консультанту.`;
+  }
+  
+  return description;
+}
+
+// Получение читаемого названия категории
+function getCategoryName(category) {
+  const names = {
+    'sofas': 'Диваны',
+    'beds': 'Кровати',
+    'wardrobes': 'Шкафы',
+    'tables': 'Столы',
+    'chairs': 'Кресла',
+    'dressers': 'Комоды'
+  };
+  return names[category] || category;
 }
 
 module.exports = {
