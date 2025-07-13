@@ -312,9 +312,7 @@ function handlePromotions() {
 // Вызов консультанта
 function handleConsultation() {
   return generateResponse(
-    "Отличная идея обратиться к консультанту! Наши специалисты находятся в зале. " +
-    "Ищите сотрудников в фирменных футболках или обратитесь к администратору на входе. " +
-    "Они помогут с выбором и оформлением заказа." + getActiveReminder(),
+    content.messages.consultation + getActiveReminder(),
     false,
     {
       buttons: [
@@ -433,21 +431,11 @@ function extractCategory(command) {
 
 // Генерация описания категории
 function generateCategoryDescription(category, products) {
-  const descriptions = {
-    'sofas': `У нас представлены ${products.length} моделей диванов: угловые, прямые и модульные. ` +
-             'Материалы обивки: ткань, экокожа, натуральная кожа. Есть модели с функцией "клик-кляк" и ортопедическими матрасами.',
-    
-    'beds': `В ассортименте ${products.length} моделей кроватей разных размеров. ` +
-            'Односпальные, полуторные, двуспальные и king-size. С подъемным механизмом и без, с мягким изголовьем.',
-    
-    'wardrobes': `Предлагаем ${products.length} вариантов шкафов: распашные, купе и модульные системы. ` +
-                 'Двух-, трех- и четырехдверные модели. Возможна комплектация под ваши потребности.',
-    
-    'tables': `У нас ${products.length} моделей столов: обеденные, журнальные, компьютерные и туалетные. ` +
-              'Материалы: дерево, стекло, металл. Раздвижные и стационарные варианты.'
-  };
-  
-  return descriptions[category] || `Доступно ${products.length} товаров в данной категории.`;
+  const description = content.categoryDescriptions[category];
+  if (description) {
+    return description.replace('{count}', products.length);
+  }
+  return `В нашем магазине двадцать первый век дом доступно ${products.length} товаров в данной категории.`;
 }
 
 // Генерация детального описания товаров категории
