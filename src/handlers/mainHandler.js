@@ -1,5 +1,6 @@
 const { getProductsByCategory } = require('../data/products');
 const { generateResponse, extractIntent } = require('../utils/responseGenerator');
+const content = require('../config/content');
 
 // Состояния сессии
 const SESSION_STATES = {
@@ -27,6 +28,12 @@ async function handleRequest(body) {
   switch (intent) {
     case 'help':
       return generateHelpResponse();
+    
+    case 'shelf_question':
+      return handleShelfQuestion();
+    
+    case 'user_greeting':
+      return handleUserGreeting();
     
     case 'category_info':
       return handleCategoryInfo(request.command);
@@ -346,6 +353,43 @@ function generateGoodbyeResponse() {
   return generateResponse(
     "Спасибо за посещение нашего магазина! Навык отключен. Удачных покупок!",
     true
+  );
+}
+
+// Обработка вопросов о полке
+function handleShelfQuestion() {
+  const shelfAnswers = content.messages.shelfAnswers;
+  const randomAnswer = shelfAnswers[Math.floor(Math.random() * shelfAnswers.length)];
+  
+  return generateResponse(
+    randomAnswer + " " + content.messages.shelfInstructions,
+    false,
+    {
+      buttons: [
+        { title: "Помощь", hide: true },
+        { title: "Товары", hide: true },
+        { title: "Консультант", hide: true }
+      ]
+    }
+  );
+}
+
+// Обработка приветствий пользователя
+function handleUserGreeting() {
+  const greetingResponses = content.messages.greetingResponses;
+  const randomGreeting = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
+  
+  return generateResponse(
+    randomGreeting + " Чем могу помочь с выбором мебели?",
+    false,
+    {
+      buttons: [
+        { title: "Диваны", hide: true },
+        { title: "Кровати", hide: true },
+        { title: "Акции", hide: true },
+        { title: "Помощь", hide: true }
+      ]
+    }
   );
 }
 
