@@ -362,7 +362,7 @@ function handleShelfQuestion() {
   const randomAnswer = shelfAnswers[Math.floor(Math.random() * shelfAnswers.length)];
   
   return generateResponse(
-    randomAnswer + " " + content.messages.shelfInstructions,
+    randomAnswer,
     false,
     {
       buttons: [
