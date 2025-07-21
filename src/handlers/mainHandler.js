@@ -1,7 +1,7 @@
 const { getProductsByCategory } = require('../data/products');
 const { generateResponse, extractIntent } = require('../utils/responseGenerator');
 const content = require('../config/content');
-const { generateArticleResponse } = require('../utils/articleSearch');
+const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
 
 // Состояния сессии
 const SESSION_STATES = {
@@ -396,12 +396,18 @@ function handleUserGreeting() {
 
 // Обработка поиска по артикулу
 function handleArticleSearch(command) {
-  // Извлекаем артикул из команды
-  const articleMatch = command.match(/(\d{5,})/); // Ищем числа от 5 цифр
+  // Сначала преобразуем слова в цифры для поддержки "восемь четыре семь четыре..."
+  const convertedCommand = convertWordsToDigits(command);
+  
+  // Извлекаем артикул из команды (ищем в оригинальной и преобразованной)
+  let articleMatch = command.match(/(\d{5,})/);
+  if (!articleMatch) {
+    articleMatch = convertedCommand.match(/(\d{5,})/);
+  }
   
   if (!articleMatch) {
     return generateResponse(
-      "Назовите артикул товара. Например: 'артикул 9174297' или просто '9174297'.",
+      "Назовите артикул товара. Например: 'артикул 9174297', просто '9174297' или по цифрам 'девять один семь четыре два девять семь'.",
       false,
       {
         buttons: [

@@ -226,6 +226,14 @@ describe('Интеграционные тесты', () => {
     // Тест с числовым кодом без слова "артикул"
     const numericCode = await handleRequest(createTestRequest('9174297'));
     expect(numericCode.response.text).toContain('9174297');
+    
+    // Тест с артикулом произнесенным по цифрам
+    const spokenDigits = await handleRequest(createTestRequest('артикул девять один семь четыре два девять семь'));
+    expect(spokenDigits.response.text).toContain('9174297');
+    
+    // Тест с произнесенными цифрами без слова "артикул"
+    const onlySpokenDigits = await handleRequest(createTestRequest('восемь четыре семь четыре шесть четыре шесть'));
+    expect(onlySpokenDigits.response.text).toContain('8474646');
   });
 
   test('Поиск по артикулу должен обрабатывать некорректные запросы', async () => {
@@ -236,6 +244,25 @@ describe('Интеграционные тесты', () => {
     // Тест с коротким номером
     const shortNumber = await handleRequest(createTestRequest('артикул 123'));
     expect(shortNumber.response.text).toContain('Назовите артикул');
+    
+    // Тест с короткими произнесенными цифрами (должны обрабатываться как unknown)
+    const shortSpokenDigits = await handleRequest(createTestRequest('один два три'));
+    expect(shortSpokenDigits.response.text).toContain('Не понял ваш вопрос');
+  });
+
+  test('Преобразование произнесенных цифр должно работать', async () => {
+    const { convertWordsToDigits } = require('../src/utils/articleSearch');
+    
+    // Тест основных цифр
+    expect(convertWordsToDigits('один два три четыре пять')).toBe('12345');
+    expect(convertWordsToDigits('восемь четыре семь четыре шесть четыре шесть')).toBe('8474646');
+    expect(convertWordsToDigits('ноль один два три четыре пять шесть семь восемь девять')).toBe('0123456789');
+    
+    // Тест с текстом и цифрами
+    expect(convertWordsToDigits('артикул девять один семь четыре два')).toBe('91742');
+    
+    // Тест с коротким числом - должен вернуть оригинальный текст
+    expect(convertWordsToDigits('один два три')).toBe('один два три');
   });
 
 });

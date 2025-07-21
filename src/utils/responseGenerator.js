@@ -1,3 +1,5 @@
+const { convertWordsToDigits } = require('./articleSearch');
+
 // Генерация ответа в формате Алисы
 function generateResponse(text, endSession = false, additionalData = {}) {
   const response = {
@@ -94,8 +96,16 @@ function extractIntent(command) {
   };
 
   // Специальная проверка на артикулы (числовые коды от 5 цифр)
+  // Сначала проверяем обычные числа
   const articleMatch = lowerCommand.match(/\d{5,}/);
   if (articleMatch) {
+    return 'article_search';
+  }
+  
+  // Затем проверяем цифры произнесенные словами
+  const convertedCommand = convertWordsToDigits(lowerCommand);
+  const convertedArticleMatch = convertedCommand.match(/\d{5,}/);
+  if (convertedArticleMatch) {
     return 'article_search';
   }
 
