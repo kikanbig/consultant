@@ -214,6 +214,30 @@ describe('Интеграционные тесты', () => {
     expect(consultant.response.text).toContain('консультант');
   });
 
+  test('Поиск по артикулу должен работать', async () => {
+    // Тест с существующим артикулом
+    const validArticle = await handleRequest(createTestRequest('артикул 9174297'));
+    expect(validArticle.response.text).toContain('9174297');
+    
+    // Тест с несуществующим артикулом
+    const invalidArticle = await handleRequest(createTestRequest('артикул 99999'));
+    expect(invalidArticle.response.text).toContain('не найден');
+    
+    // Тест с числовым кодом без слова "артикул"
+    const numericCode = await handleRequest(createTestRequest('9174297'));
+    expect(numericCode.response.text).toContain('9174297');
+  });
+
+  test('Поиск по артикулу должен обрабатывать некорректные запросы', async () => {
+    // Тест без номера
+    const noNumber = await handleRequest(createTestRequest('артикул'));
+    expect(noNumber.response.text).toContain('Назовите артикул');
+    
+    // Тест с коротким номером
+    const shortNumber = await handleRequest(createTestRequest('артикул 123'));
+    expect(shortNumber.response.text).toContain('Назовите артикул');
+  });
+
 });
 
 // Запуск тестов: npm test 

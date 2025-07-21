@@ -1,6 +1,7 @@
 const { getProductsByCategory } = require('../data/products');
 const { generateResponse, extractIntent } = require('../utils/responseGenerator');
 const content = require('../config/content');
+const { generateArticleResponse } = require('../utils/articleSearch');
 
 // Состояния сессии
 const SESSION_STATES = {
@@ -34,6 +35,9 @@ async function handleRequest(body) {
     
     case 'user_greeting':
       return handleUserGreeting();
+    
+    case 'article_search':
+      return handleArticleSearch(request.command);
     
     case 'category_info':
       return handleCategoryInfo(request.command);
@@ -390,6 +394,54 @@ function handleUserGreeting() {
   );
 }
 
+// Обработка поиска по артикулу
+function handleArticleSearch(command) {
+  // Извлекаем артикул из команды
+  const articleMatch = command.match(/(\d{5,})/); // Ищем числа от 5 цифр
+  
+  if (!articleMatch) {
+    return generateResponse(
+      "Назовите артикул товара. Например: 'артикул 9174297' или просто '9174297'.",
+      false,
+      {
+        buttons: [
+          { title: "Помощь", hide: true },
+          { title: "Консультант", hide: true }
+        ]
+      }
+    );
+  }
+  
+  const article = articleMatch[1];
+  const result = generateArticleResponse(article);
+  
+  if (!result.found) {
+    return generateResponse(
+      result.response,
+      false,
+      {
+        buttons: [
+          { title: "Консультант", hide: true },
+          { title: "Другой артикул", hide: true },
+          { title: "Каталог", hide: true }
+        ]
+      }
+    );
+  }
+  
+  return generateResponse(
+    result.response,
+    false,
+    {
+      buttons: [
+        { title: "Консультант", hide: true },
+        { title: "Другой товар", hide: true },
+        { title: "Акции", hide: true }
+      ]
+    }
+  );
+}
+
 // Обработка неопознанных команд
 function handleDefaultResponse(command) {
   const suggestions = [
@@ -500,7 +552,7 @@ function getActiveReminder() {
     "Хотите узнать что-либо еще?",
     "Можете спросить что-то еще.",
     "Что еще хотите узнать?",
-    "Я готов рассказать больше!",
+    "Я готова рассказать больше!",
     "Продолжайте, я слушаю!",
     "Есть еще вопросы по товарам?"
   ];
