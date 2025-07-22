@@ -265,6 +265,28 @@ describe('Интеграционные тесты', () => {
     expect(convertWordsToDigits('один два три')).toBe('один два три');
   });
 
+  test('Форматирование цен в белорусских рублях должно работать', async () => {
+    const { formatPriceForSpeech } = require('../src/utils/priceFormatter');
+    
+    // Тест цен с копейками
+    expect(formatPriceForSpeech(1082.62)).toBe('одна тысяча восемьдесят два рубля шестьдесят две копейки');
+    expect(formatPriceForSpeech(2.50)).toBe('два рубля пятьдесят копеек');
+    expect(formatPriceForSpeech(1.01)).toBe('один рубль одна копейка');
+    
+    // Тест округления
+    expect(formatPriceForSpeech(1082.62, true)).toBe('одна тысяча восемьдесят три рубля');
+    expect(formatPriceForSpeech(2.49, true)).toBe('два рубля');
+    
+    // Тест целых чисел
+    expect(formatPriceForSpeech(1)).toBe('один рубль');
+    expect(formatPriceForSpeech(21)).toBe('двадцать один рубль');
+    expect(formatPriceForSpeech(100)).toBe('сто рублей');
+    expect(formatPriceForSpeech(1000)).toBe('одна тысяча рублей');
+    
+    // Тест нуля
+    expect(formatPriceForSpeech(0)).toBe('бесплатно');
+  });
+
 });
 
 // Запуск тестов: npm test 

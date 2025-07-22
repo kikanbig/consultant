@@ -2,6 +2,7 @@ const { getProductsByCategory } = require('../data/products');
 const { generateResponse, extractIntent } = require('../utils/responseGenerator');
 const content = require('../config/content');
 const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
+const { formatPriceForSpeech } = require('../utils/priceFormatter');
 
 // Состояния сессии
 const SESSION_STATES = {
@@ -571,55 +572,7 @@ function getActiveReminder() {
   return "";
 }
 
-// Функция для правильного произношения цен
-function formatPriceForSpeech(price) {
-  if (price === 0) return "бесплатно";
-  
-  // Преобразуем в тысячи для более читаемого произношения
-  if (price >= 1000 && price % 1000 === 0) {
-    const thousands = price / 1000;
-    
-    // Словарь для чисел
-    const numbers = {
-      1: "одна", 2: "две", 3: "три", 4: "четыре", 5: "пять",
-      6: "шесть", 7: "семь", 8: "восемь", 9: "девять", 10: "десять",
-      11: "одиннадцать", 12: "двенадцать", 13: "тринадцать", 14: "четырнадцать", 15: "пятнадцать",
-      16: "шестнадцать", 17: "семнадцать", 18: "восемнадцать", 19: "девятнадцать", 20: "двадцать",
-      30: "тридцать", 40: "сорок", 50: "пятьдесят", 60: "шестьдесят", 
-      70: "семьдесят", 80: "восемьдесят", 90: "девяносто"
-    };
-    
-    let result = "";
-    
-    if (thousands <= 20) {
-      result = numbers[thousands] || thousands.toString();
-    } else if (thousands < 100) {
-      const tens = Math.floor(thousands / 10) * 10;
-      const units = thousands % 10;
-      result = numbers[tens];
-      if (units > 0) {
-        result += " " + numbers[units];
-      }
-    } else {
-      // Для больших чисел используем обычное форматирование
-      return price.toLocaleString('ru-RU') + " рублей";
-    }
-    
-    // Добавляем правильное склонение слова "тысяча"
-    if (thousands === 1) {
-      result += " тысяча";
-    } else if (thousands >= 2 && thousands <= 4) {
-      result += " тысячи";
-    } else {
-      result += " тысяч";
-    }
-    
-    return result + " рублей";
-  }
-  
-  // Для цен меньше 1000 или не кратных 1000
-  return price.toLocaleString('ru-RU') + " рублей";
-}
+
 
 module.exports = {
   handleRequest

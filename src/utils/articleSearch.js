@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { formatPriceForSpeech } = require('./priceFormatter');
 
 // Загружаем данные о диванах
 let divansData = null;
@@ -112,7 +113,12 @@ function formatProductProperties(product) {
   }
   
   if (properties['Цена']) {
-    response += `💰 Цена: ${properties['Цена']} руб.\n`;
+    const price = parseFloat(properties['Цена']);
+    if (!isNaN(price)) {
+      response += `💰 Цена: ${formatPriceForSpeech(price)}\n`;
+    } else {
+      response += `💰 Цена: ${properties['Цена']} руб.\n`;
+    }
   }
   
   // Добавляем остальные свойства
