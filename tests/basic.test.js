@@ -287,6 +287,72 @@ describe('Интеграционные тесты', () => {
     expect(formatPriceForSpeech(0)).toBe('бесплатно');
   });
 
+  test('Работа со стеллажами должна функционировать', async () => {
+    const { getAllShelves, getShelfInfo, getShelfLevelProducts } = require('../src/utils/shelfManager');
+    
+    // Тест получения списка стеллажей
+    const shelves = getAllShelves();
+    expect(shelves).toBeDefined();
+    expect(shelves.length).toBeGreaterThan(0);
+    expect(shelves[0]).toHaveProperty('id');
+    expect(shelves[0]).toHaveProperty('name');
+    
+    // Тест получения информации о стеллаже
+    const shelfInfo = getShelfInfo('1');
+    expect(shelfInfo).toBeDefined();
+    expect(shelfInfo.name).toContain('Стеллаж 1');
+    expect(shelfInfo.levels).toBeDefined();
+    expect(shelfInfo.levels.length).toBeGreaterThan(0);
+    
+    // Тест получения товаров с полки
+    const products = getShelfLevelProducts('1', '1');
+    expect(products).toBeDefined();
+    expect(products.length).toBeGreaterThan(0);
+    expect(products[0]).toHaveProperty('name');
+    expect(products[0]).toHaveProperty('priceFormatted');
+  });
+
+  test('Поиск товара по артикулу на стеллажах должен работать', async () => {
+    const { findProductByArticle } = require('../src/utils/shelfManager');
+    
+    // Тест поиска существующего товара
+    const result = findProductByArticle('TB001');
+    expect(result).toBeDefined();
+    expect(result.product).toBeDefined();
+    expect(result.product.article).toBe('TB001');
+    expect(result.shelfId).toBe('1');
+    expect(result.levelId).toBe('1');
+    
+    // Тест поиска несуществующего товара
+    const notFound = findProductByArticle('NONEXISTENT');
+    expect(notFound).toBeNull();
+  });
+
+  test('Обработка вопросов о стеллажах должна работать', async () => {
+    const { handleRequest } = require('../src/handlers/mainHandler');
+    
+    // Тест вопроса о стеллаже без номера
+    const result1 = await handleRequest({
+      request: { command: 'что на стеллаже', type: 'SimpleUtterance' },
+      session: { new: false, session_id: 'test' },
+      version: '1.0'
+    });
+    
+    expect(result1.response.text).toContain('стеллаж');
+    expect(result1.response.end_session).toBe(false);
+    
+    // Тест вопроса о конкретном стеллаже
+    const result2 = await handleRequest({
+      request: { command: 'стеллаж номер 1', type: 'SimpleUtterance' },
+      session: { new: false, session_id: 'test' },
+      version: '1.0'
+    });
+    
+    expect(result2.response.text).toContain('Стеллаж 1');
+    expect(result2.response.buttons).toBeDefined();
+    expect(result2.response.buttons.length).toBeGreaterThan(0);
+  });
+
 });
 
 // Запуск тестов: npm test 

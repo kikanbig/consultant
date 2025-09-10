@@ -3,6 +3,7 @@ const { generateResponse, extractIntent } = require('../utils/responseGenerator'
 const content = require('../config/content');
 const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
 const { formatPriceForSpeech } = require('../utils/priceFormatter');
+const { generateShelfResponse, generateShelfLevelResponse, findProductByArticle } = require('../utils/shelfManager');
 
 // Состояния сессии
 const SESSION_STATES = {
@@ -33,6 +34,9 @@ async function handleRequest(body) {
     
     case 'shelf_question':
       return handleShelfQuestion();
+    
+    case 'shelf_info':
+      return handleShelfInfo(request.command);
     
     case 'user_greeting':
       return handleUserGreeting();
@@ -572,8 +576,40 @@ function getActiveReminder() {
   return "";
 }
 
+// Обработчик вопросов о стеллажах
+function handleShelfInfo(command) {
+  // Извлекаем номер стеллажа из команды
+  const shelfMatch = command.match(/(?:стеллаж|полка)\s*(?:номер\s*)?(\d+)/i);
+  
+  if (shelfMatch) {
+    const shelfId = shelfMatch[1];
+    const shelfResponse = generateShelfResponse(shelfId);
+    return generateResponse(shelfResponse.text, shelfResponse.endSession, { buttons: shelfResponse.buttons });
+  }
+  
+  // Если номер не указан, показываем список доступных стеллажей
+  const { getAllShelves } = require('../utils/shelfManager');
+  const shelves = getAllShelves();
+  
+  let response = "У нас есть следующие стеллажи:\n\n";
+  shelves.forEach(shelf => {
+    response += `Стеллаж ${shelf.id} - ${shelf.name}\n`;
+  });
+  response += "\nСкажите номер стеллажа, который вас интересует.";
+  
+  return generateResponse(response, false, [
+    { title: "Стеллаж 1", payload: { shelf_id: "1" } },
+    { title: "Стеллаж 2", payload: { shelf_id: "2" } },
+    { title: "Стеллаж 3", payload: { shelf_id: "3" } }
+  ]);
+}
 
+// Обработчик уточнения полки (для кнопок)
+function handleShelfLevel(shelfId, levelId) {
+  return generateShelfLevelResponse(shelfId, levelId);
+}
 
 module.exports = {
-  handleRequest
+  handleRequest,
+  handleShelfLevel
 }; 
