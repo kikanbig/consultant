@@ -25,9 +25,60 @@ function generateResponse(text, endSession = false, additionalData = {}) {
   return response;
 }
 
+// Извлечение номеров стеллажей и полок из команды
+function extractShelfNumbers(command) {
+  const lowerCommand = command.toLowerCase();
+  
+  // Сначала ищем комбинацию "стеллаж X полка Y"
+  const shelfAndLevelMatch = lowerCommand.match(/стеллаж[е]?\s*(?:номер\s*)?(\d+)\s*полка\s*(?:номер\s*)?(\d+)/) ||
+                            lowerCommand.match(/(\d+)\s*стеллаж[е]?\s*полка\s*(?:номер\s*)?(\d+)/);
+  
+  if (shelfAndLevelMatch) {
+    return {
+      shelfId: shelfAndLevelMatch[1].toString(),
+      levelId: shelfAndLevelMatch[2].toString()
+    };
+  }
+  
+  // Затем ищем только стеллаж
+  const shelfMatch = lowerCommand.match(/стеллаж[е]?\s*(?:номер\s*)?(\d+)/) ||
+                     lowerCommand.match(/(\d+)\s*стеллаж[е]?/);
+  
+  if (shelfMatch) {
+    return {
+      shelfId: shelfMatch[1].toString(),
+      levelId: null
+    };
+  }
+  
+  // Затем ищем только полку
+  const levelMatch = lowerCommand.match(/полка\s*(?:номер\s*)?(\d+)/) ||
+                     lowerCommand.match(/(\d+)\s*полка/) ||
+                     lowerCommand.match(/(\d+)\s*полке/);
+  
+  if (levelMatch) {
+    return {
+      shelfId: null,
+      levelId: levelMatch[1].toString()
+    };
+  }
+  
+  return { shelfId: null, levelId: null };
+}
+
 // Определение намерения пользователя
 function extractIntent(command) {
   const lowerCommand = command.toLowerCase();
+  
+  // Сначала проверяем прямые запросы о стеллажах с номерами
+  const shelfNumbers = extractShelfNumbers(command);
+  if ((shelfNumbers.shelfId || shelfNumbers.levelId) && (lowerCommand.includes('стеллаж') || lowerCommand.includes('полка'))) {
+    return {
+      intent: 'shelf_direct',
+      shelfId: shelfNumbers.shelfId,
+      levelId: shelfNumbers.levelId
+    };
+  }
   
   // Ключевые слова для определения интентов (порядок важен - специфичные сначала)
   const intents = {
@@ -217,6 +268,7 @@ function validateResponse(response) {
 module.exports = {
   generateResponse,
   extractIntent,
+  extractShelfNumbers,
   generateProductCard,
   formatProductsList,
   randomChoice,

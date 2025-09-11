@@ -23,10 +23,27 @@ async function handleRequest(body) {
   }
   
   // Обработка команд
-  const intent = extractIntent(request.command);
+  const intentResult = extractIntent(request.command);
   const sessionState = session.session_id ? SESSION_STATES.START : SESSION_STATES.START;
   
-  console.log(`Intent: ${intent}, State: ${sessionState}`);
+  console.log(`Intent: ${intentResult}, State: ${sessionState}`);
+  
+  // Если intent - объект с полями intent, shelfId, levelId
+  if (typeof intentResult === 'object' && intentResult.intent) {
+    const intent = intentResult.intent;
+    const shelfId = intentResult.shelfId;
+    const levelId = intentResult.levelId;
+    
+    switch (intent) {
+      case 'shelf_direct':
+        return handleShelfDirect(shelfId, levelId);
+      default:
+        return handleDefaultResponse(request.command);
+    }
+  }
+  
+  // Если intent - строка (старая логика)
+  const intent = intentResult;
   
   switch (intent) {
     case 'help':
@@ -609,7 +626,36 @@ function handleShelfLevel(shelfId, levelId) {
   return generateShelfLevelResponse(shelfId, levelId);
 }
 
+// Обработчик прямых запросов о стеллажах с номерами
+function handleShelfDirect(shelfId, levelId) {
+  if (!shelfId && !levelId) {
+    return generateResponse(
+      "Не поняла номер стеллажа. Скажите, например: 'стеллаж 4' или 'что на стеллаже 6'",
+      false
+    );
+  }
+  
+  // Если указан и стеллаж, и полка - показываем товары на полке
+  if (shelfId && levelId) {
+    return generateShelfLevelResponse(shelfId, levelId);
+  }
+  
+  // Если указан только стеллаж - показываем полки
+  if (shelfId) {
+    return generateShelfResponse(shelfId);
+  }
+  
+  // Если указана только полка - это ошибка, нужен стеллаж
+  if (levelId) {
+    return generateResponse(
+      "Для поиска по полке нужно указать номер стеллажа. Скажите, например: 'стеллаж 4 полка 3'",
+      false
+    );
+  }
+}
+
 module.exports = {
   handleRequest,
-  handleShelfLevel
+  handleShelfLevel,
+  handleShelfDirect
 }; 

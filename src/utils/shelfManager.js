@@ -115,15 +115,19 @@ function generateShelfResponse(shelfId) {
   response += `\nНа какой полке вас интересует? Скажите номер полки.`;
   
   return {
-    text: response,
-    endSession: false,
-    buttons: shelfInfo.levels.map((level, index) => ({
-      title: `Полка ${index + 1}`,
-      payload: {
-        shelf_id: shelfId,
-        level_id: level.id
-      }
-    }))
+    response: {
+      text: response,
+      end_session: false,
+      should_listen: true,
+      buttons: shelfInfo.levels.map((level, index) => ({
+        title: `Полка ${index + 1}`,
+        payload: {
+          shelf_id: shelfId,
+          level_id: level.id
+        }
+      }))
+    },
+    version: '1.0'
   };
 }
 
@@ -134,8 +138,12 @@ function generateShelfLevelResponse(shelfId, levelId) {
   
   if (!products) {
     return {
-      text: `Полка не найдена на стеллаже ${shelfId}.`,
-      endSession: false
+      response: {
+        text: `Полка не найдена на стеллаже ${shelfId}.`,
+        end_session: false,
+        should_listen: true
+      },
+      version: '1.0'
     };
   }
   
@@ -158,8 +166,12 @@ function generateShelfLevelResponse(shelfId, levelId) {
   }
   
   return {
-    text: response,
-    endSession: false
+    response: {
+      text: response,
+      end_session: false,
+      should_listen: true
+    },
+    version: '1.0'
   };
 }
 
