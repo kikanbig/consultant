@@ -348,7 +348,7 @@ describe('Интеграционные тесты', () => {
       version: '1.0'
     });
     
-    expect(result2.response.text).toContain('Стеллаж 1');
+    expect(result2.response.text).toContain('стеллаже номер один');
     expect(result2.response.buttons).toBeDefined();
     expect(result2.response.buttons.length).toBeGreaterThan(0);
   });

@@ -2,6 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const { formatPriceForSpeech } = require('./priceFormatter');
 
+// Преобразование чисел в слова для лучшего произношения
+function convertNumberToWords(num) {
+  const numbers = {
+    '1': 'один', '2': 'два', '3': 'три', '4': 'четыре', '5': 'пять',
+    '6': 'шесть', '7': 'семь', '8': 'восемь', '9': 'девять', '10': 'десять',
+    '11': 'одиннадцать', '12': 'двенадцать', '13': 'тринадцать', '14': 'четырнадцать', '15': 'пятнадцать'
+  };
+  
+  return numbers[num] || num;
+}
+
 // Загружаем данные о стеллажах
 let shelvesData = null;
 
@@ -106,10 +117,12 @@ function generateShelfResponse(shelfId) {
     };
   }
   
-  let response = `На стеллаже "${shelfInfo.name}" есть следующие полки:\n\n`;
+  const shelfNumber = convertNumberToWords(shelfId);
+  let response = `На стеллаже номер ${shelfNumber} есть следующие полки:\n\n`;
   
   shelfInfo.levels.forEach((level, index) => {
-    response += `${index + 1}. ${level.name} (${level.productCount} товаров)\n`;
+    const levelNumber = convertNumberToWords(level.id);
+    response += `${levelNumber}. ${level.name} (${level.productCount} товаров)\n`;
   });
   
   response += `\nНа какой полке вас интересует? Скажите номер полки.`;
@@ -148,7 +161,12 @@ function generateShelfLevelResponse(shelfId, levelId) {
   }
   
   const level = shelfInfo.levels.find(l => l.id === levelId);
-  let response = `На полке "${level.name}" стеллажа "${shelfInfo.name}" находится:\n\n`;
+  
+  // Преобразуем номера в слова для лучшего произношения
+  const shelfNumber = convertNumberToWords(shelfId);
+  const levelNumber = convertNumberToWords(levelId);
+  
+  let response = `На стеллаже номер ${shelfNumber} полка ${levelNumber} находится:\n\n`;
   
   if (products.length === 0) {
     response += "На этой полке пока нет товаров.";
