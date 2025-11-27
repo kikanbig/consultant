@@ -1,7 +1,7 @@
 {
   "name": "alice-store-skill",
-  "version": "1.0.0",
-  "description": "Навык Алисы для информирования покупателей в торговом зале",
+  "version": "1.1.0",
+  "description": "Навык Алисы для информирования покупателей в торговом зале с персонализацией по устройствам",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

@@ -70,6 +70,14 @@ function extractShelfNumbers(command) {
 function extractIntent(command) {
   const lowerCommand = command.toLowerCase();
   
+  // Секретная команда для получения ID устройства (для настройки)
+  if (lowerCommand.includes('мой айди') || 
+      lowerCommand.includes('мой id') || 
+      lowerCommand.includes('покажи айди') ||
+      lowerCommand.includes('покажи id')) {
+    return 'show_device_id';
+  }
+  
   // Сначала проверяем прямые запросы о стеллажах с номерами
   const shelfNumbers = extractShelfNumbers(command);
   if ((shelfNumbers.shelfId || shelfNumbers.levelId) && (lowerCommand.includes('стеллаж') || lowerCommand.includes('полка'))) {

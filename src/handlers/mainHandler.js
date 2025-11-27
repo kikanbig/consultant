@@ -4,6 +4,12 @@ const content = require('../config/content');
 const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
 const { formatPriceForSpeech } = require('../utils/priceFormatter');
 const { generateShelfResponse, generateShelfLevelResponse, findProductByArticle } = require('../utils/shelfManager');
+const { 
+  getWelcomeMessage, 
+  getPromotionsMessage, 
+  getDefaultButtons,
+  getPersonalizedContent 
+} = require('../utils/deviceManager');
 
 // Состояния сессии
 const SESSION_STATES = {
@@ -19,7 +25,7 @@ async function handleRequest(body) {
   
   // Новая сессия
   if (session.new) {
-    return handleNewSession();
+    return handleNewSession(body);
   }
   
   // Обработка команд
@@ -46,8 +52,11 @@ async function handleRequest(body) {
   const intent = intentResult;
   
   switch (intent) {
+    case 'show_device_id':
+      return handleShowDeviceId(body);
+    
     case 'help':
-      return generateHelpResponse();
+      return generateHelpResponse(body);
     
     case 'shelf_question':
       return handleShelfQuestion();
@@ -56,7 +65,7 @@ async function handleRequest(body) {
       return handleShelfInfo(request.command);
     
     case 'user_greeting':
-      return handleUserGreeting();
+      return handleUserGreeting(body);
     
     case 'article_search':
       return handleArticleSearch(request.command);
@@ -74,7 +83,7 @@ async function handleRequest(body) {
       return handleProductSearch(request.command);
     
     case 'promotions':
-      return handlePromotions();
+      return handlePromotions(body);
     
     case 'consultation':
       return handleConsultation();
@@ -83,25 +92,20 @@ async function handleRequest(body) {
       return generateGoodbyeResponse();
     
     default:
-      return handleDefaultResponse(request.command);
+      return handleDefaultResponse(request.command, body);
   }
 }
 
 // Приветствие для новой сессии
-function handleNewSession() {
+function handleNewSession(body) {
+  // Получаем персонализированное приветствие и кнопки
+  const welcomeText = getWelcomeMessage(body);
+  const buttons = getDefaultButtons(body);
+  
   return generateResponse(
-    "Добро пожаловать! Я ассистент торгового зала магазина двадцать первый век дом. " +
-    "просто задавайте вопросы о товарах, акциях или просите консультанта. " +
-    "Для выхода скажите 'выход' или 'стоп'. Команда 'помощь' покажет все возможности.",
+    welcomeText + " Для выхода скажите 'выход' или 'стоп'. Команда 'помощь' покажет все возможности.",
     false,
-    {
-      buttons: [
-        { title: "Диваны", hide: true },
-        { title: "Диван Комфорт", hide: true },
-        { title: "Акции", hide: true },
-        { title: "Помощь", hide: true }
-      ]
-    }
+    { buttons }
   );
 }
 
@@ -319,17 +323,18 @@ function handleProductSearch(command) {
 }
 
 // Информация об акциях
-function handlePromotions() {
+function handlePromotions(body) {
+  // Получаем персонализированную информацию об акциях
+  const promotionsText = getPromotionsMessage(body);
+  
   return generateResponse(
-    "Сейчас у нас действуют отличные акции! скидки до 30% на диваны, " +
-    "бесплатная доставка при покупке от 50 тысяч рублей, и специальная рассрочка без переплат. " +
-    "Хотите узнать подробности по какой-то категории?" + getActiveReminder(),
+    promotionsText + " Хотите узнать подробности по какой-то категории?" + getActiveReminder(),
     false,
     {
       buttons: [
-        { title: "Скидки на диваны", hide: true },
-        { title: "Условия доставки", hide: true },
-        { title: "Рассрочка", hide: true }
+        { title: "Подробнее", hide: true },
+        { title: "Консультант", hide: true },
+        { title: "Товары", hide: true }
       ]
     }
   );
@@ -350,25 +355,27 @@ function handleConsultation() {
 }
 
 // Справка
-function generateHelpResponse() {
-  return generateResponse(
-    "Я ассистент торгового зала. Умею:\n" +
+function generateHelpResponse(body) {
+  const { content: locationContent, location } = getPersonalizedContent(body);
+  
+  let helpText = "Я ассистент торгового зала. Умею:\n" +
     "• Общая информация: 'расскажи про диваны', 'какие есть кровати'\n" +
     "• Детальные списки: 'все модели диванов', 'подробнее о кроватях'\n" +
     "• Конкретные товары: 'диван Комфорт', 'угловой диван', 'кровать Мечта'\n" +
     "• Информация об акциях: 'какие есть скидки', 'есть ли акции'\n" +
     "• Вызов консультанта: 'нужен продавец', 'позовите консультанта'\n" +
-    "• Выход из навыка: 'выход', 'стоп', 'закрыть'\n\n" +
-    "Доступны категории: диваны, кровати, шкафы, столы, кресла.",
-    false,
-    {
-      buttons: [
-        { title: "Диваны", hide: true },
-        { title: "Акции", hide: true },
-        { title: "Консультант", hide: true }
-      ]
-    }
-  );
+    "• Выход из навыка: 'выход', 'стоп', 'закрыть'\n\n";
+  
+  // Добавляем информацию о доступных категориях для данной локации
+  if (locationContent.mainCategories && locationContent.mainCategories.length > 0) {
+    helpText += `В этой зоне доступны: ${locationContent.mainCategories.join(', ')}.`;
+  } else {
+    helpText += "Доступны категории: диваны, кровати, шкафы, столы, кресла.";
+  }
+  
+  const buttons = getDefaultButtons(body);
+  
+  return generateResponse(helpText, false, { buttons });
 }
 
 // Прощание
@@ -376,6 +383,44 @@ function generateGoodbyeResponse() {
   return generateResponse(
     "Спасибо за посещение нашего магазина! Навык отключен. Удачных покупок!",
     true
+  );
+}
+
+// Показать ID устройства (для настройки)
+function handleShowDeviceId(body) {
+  const { deviceInfo, location, content } = getPersonalizedContent(body);
+  
+  let response = "📱 Информация об устройстве:\n\n";
+  
+  if (deviceInfo.clientId) {
+    response += `Client ID: ${deviceInfo.clientId}\n`;
+  } else {
+    response += "Client ID: не определен\n";
+  }
+  
+  if (deviceInfo.userId) {
+    response += `User ID: ${deviceInfo.userId}\n`;
+  }
+  
+  response += `\nТип устройства: ${deviceInfo.deviceType === 'screen' ? 'с экраном' : 'колонка'}\n`;
+  
+  if (location) {
+    response += `\nЛокация: ${content.name} (настроена)\n`;
+  } else {
+    response += `\nЛокация: не настроена (используется контент по умолчанию)\n`;
+  }
+  
+  response += "\n💡 Скопируйте Client ID и добавьте его в src/config/deviceContent.js";
+  
+  return generateResponse(
+    response,
+    false,
+    {
+      buttons: [
+        { title: "Понятно", hide: true },
+        { title: "Помощь", hide: true }
+      ]
+    }
   );
 }
 
@@ -398,21 +443,15 @@ function handleShelfQuestion() {
 }
 
 // Обработка приветствий пользователя
-function handleUserGreeting() {
+function handleUserGreeting(body) {
   const greetingResponses = content.messages.greetingResponses;
   const randomGreeting = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
+  const buttons = getDefaultButtons(body);
   
   return generateResponse(
-    randomGreeting + " Чем могу помочь с выбором мебели?",
+    randomGreeting + " Чем могу помочь с выбором?",
     false,
-    {
-      buttons: [
-        { title: "Диваны", hide: true },
-        { title: "Кровати", hide: true },
-        { title: "Акции", hide: true },
-        { title: "Помощь", hide: true }
-      ]
-    }
+    { buttons }
   );
 }
 
@@ -471,30 +510,24 @@ function handleArticleSearch(command) {
 }
 
 // Обработка неопознанных команд
-function handleDefaultResponse(command) {
+function handleDefaultResponse(command, body) {
   const suggestions = [
-    "Может быть, вас интересуют диваны или кровати?",
+    "Может быть, вас интересуют товары из нашего ассортимента?",
     "Хотите узнать об акциях?",
-    "Нужна помощь с выбором мебели?",
+    "Нужна помощь с выбором?",
     "Расскажу про любую категорию товаров!",
     "Могу вызвать консультанта для вас!"
   ];
   
   const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+  const buttons = getDefaultButtons(body);
   
   return generateResponse(
     "Не понял ваш вопрос. " + randomSuggestion + " " +
     "Скажите 'помощь', чтобы узнать все возможности." +
     getActiveReminder(),
     false,
-    {
-      buttons: [
-        { title: "Помощь", hide: true },
-        { title: "Диваны", hide: true },
-        { title: "Акции", hide: true },
-        { title: "Консультант", hide: true }
-      ]
-    }
+    { buttons }
   );
 }
 

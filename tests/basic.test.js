@@ -85,8 +85,8 @@ describe('Навык Алисы - Базовые тесты', () => {
     const request = createTestRequest('какие есть акции');
     const response = await handleRequest(request);
     
-    expect(response.response.text).toContain('акци');
-    expect(response.response.text).toContain('скидк');
+    expect(response.response.text.toLowerCase()).toContain('акци');
+    expect(response.response.text.toLowerCase()).toContain('скидк');
     expect(response.response.end_session).toBe(false);
   });
 
@@ -203,15 +203,15 @@ describe('Интеграционные тесты', () => {
   test('Цепочка: акции -> подробности -> консультант', async () => {
     // Запрос акций
     const promotions = await handleRequest(createTestRequest('какие есть акции'));
-    expect(promotions.response.text).toContain('скидк');
+    expect(promotions.response.text.toLowerCase()).toContain('скидк');
     
     // Подробности по диванам
     const details = await handleRequest(createTestRequest('скидки на диваны'));
-    expect(details.response.text).toContain('диван');
+    expect(details.response.text.toLowerCase()).toContain('диван');
     
     // Консультант
     const consultant = await handleRequest(createTestRequest('нужен консультант'));
-    expect(consultant.response.text).toContain('консультант');
+    expect(consultant.response.text.toLowerCase()).toContain('консультант');
   });
 
   test('Поиск по артикулу должен работать', async () => {
