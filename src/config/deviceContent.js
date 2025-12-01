@@ -19,12 +19,17 @@ module.exports = {
   // Здесь привязываем ID устройства к понятному названию локации
   
   deviceMapping: {
-    // Пример: замените на реальные ID ваших колонок
-    // 'РЕАЛЬНЫЙ_CLIENT_ID_1': 'kitchen',
-    // 'РЕАЛЬНЫЙ_CLIENT_ID_2': 'bedroom',
-    // 'РЕАЛЬНЫЙ_CLIENT_ID_3': 'hall',
+    // ИСПОЛЬЗУЙТЕ APPLICATION ID - это уникальный ID каждой колонки!
+    // Получите Application ID командой "Мой айди" на каждой колонке
     
-    // Для тестирования - можно использовать user_id или session_id
+    // Примеры (замените на реальные Application ID ваших колонок):
+    // '4C5D0AB096BDA3490276E6EB7AE20E7FE1027D906DED420D3589D1C1CB5F18E4': 'kitchen',
+    // '9A53EAE2932C1EB10C9AC5B952FDC7361044358B7ABAB9EDC64B2C471F767348': 'bedroom',
+    // 'ДРУГОЙ_APPLICATION_ID_3': 'hall',
+    // 'ДРУГОЙ_APPLICATION_ID_4': 'office',
+    // 'ДРУГОЙ_APPLICATION_ID_5': 'entrance',
+    
+    // Для тестирования:
     'test_user_kitchen': 'kitchen',
     'test_user_bedroom': 'bedroom',
     'test_user_hall': 'hall',

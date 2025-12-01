@@ -392,25 +392,25 @@ function handleShowDeviceId(body) {
   
   let response = "📱 Информация об устройстве:\n\n";
   
-  if (deviceInfo.clientId) {
-    response += `Client ID: ${deviceInfo.clientId}\n`;
+  if (deviceInfo.applicationId) {
+    response += `🔑 Application ID:\n${deviceInfo.applicationId}\n\n`;
+    response += "Это уникальный ID вашей колонки!\n\n";
   } else {
-    response += "Client ID: не определен\n";
+    response += "Application ID: не определен\n\n";
   }
   
   if (deviceInfo.userId) {
-    response += `User ID: ${deviceInfo.userId}\n`;
+    response += `User ID: ${deviceInfo.userId.substring(0, 20)}...\n`;
   }
   
-  response += `\nТип устройства: ${deviceInfo.deviceType === 'screen' ? 'с экраном' : 'колонка'}\n`;
+  response += `Тип устройства: ${deviceInfo.deviceType === 'screen' ? 'с экраном' : 'колонка'}\n`;
   
   if (location) {
-    response += `\nЛокация: ${content.name} (настроена)\n`;
+    response += `\nЛокация: ${content.name} ✅ (настроена)\n`;
   } else {
-    response += `\nЛокация: не настроена (используется контент по умолчанию)\n`;
+    response += `\nЛокация: не настроена\n`;
+    response += "💡 Скопируйте Application ID и добавьте в deviceContent.js";
   }
-  
-  response += "\n💡 Скопируйте Client ID и добавьте его в src/config/deviceContent.js";
   
   return generateResponse(
     response,

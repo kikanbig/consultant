@@ -18,7 +18,7 @@ function getDeviceInfo(body) {
     deviceType: 'unknown'
   };
 
-  // Извлекаем client_id из meta (уникальный ID устройства)
+  // Извлекаем client_id из meta
   if (body.meta && body.meta.client_id) {
     deviceInfo.clientId = body.meta.client_id;
   }
@@ -33,7 +33,8 @@ function getDeviceInfo(body) {
     deviceInfo.sessionId = body.session.session_id;
   }
 
-  // Извлекаем application_id
+  // Извлекаем application_id - УНИКАЛЬНЫЙ ID УСТРОЙСТВА!
+  // Это стабильный идентификатор конкретной колонки
   if (body.session && body.session.application && body.session.application.application_id) {
     deviceInfo.applicationId = body.session.application.application_id;
   }
@@ -62,7 +63,13 @@ function getDeviceLocation(deviceInfo) {
 
   const { deviceMapping } = deviceConfig;
 
-  // Проверяем по client_id (основной способ)
+  // Проверяем по application_id (ОСНОВНОЙ способ - уникальный ID колонки!)
+  if (deviceInfo.applicationId && deviceMapping[deviceInfo.applicationId]) {
+    console.log(`✅ Found location by Application ID: ${deviceInfo.applicationId.substring(0, 16)}...`);
+    return deviceMapping[deviceInfo.applicationId];
+  }
+
+  // Проверяем по client_id (запасной вариант)
   if (deviceInfo.clientId && deviceMapping[deviceInfo.clientId]) {
     return deviceMapping[deviceInfo.clientId];
   }
@@ -106,6 +113,7 @@ function getPersonalizedContent(body) {
   // Логирование для отладки
   if (deviceConfig.settings.logDeviceInfo) {
     console.log('=== DEVICE INFO ===');
+    console.log('🔑 Application ID:', deviceInfo.applicationId || 'не определен');
     console.log('Client ID:', deviceInfo.clientId || 'не определен');
     console.log('User ID:', deviceInfo.userId || 'не определен');
     console.log('Session ID:', deviceInfo.sessionId || 'не определен');
