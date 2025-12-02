@@ -43,14 +43,21 @@ function generateMatrasResponse(query) {
     response += '\n';
   }
   
-  if (matras.sizes && matras.sizes.length > 0) {
-    response += `📏 Доступные размеры: ${matras.sizes.join(', ')}\n\n`;
+  // Характеристики
+  if (matras.height) {
+    response += `📏 Высота: ${matras.height}\n`;
+  }
+  if (matras.firmness) {
+    response += `💪 Жесткость: ${matras.firmness}\n`;
+  }
+  if (matras.maxLoad) {
+    response += `⚖️ Макс. нагрузка: ${matras.maxLoad}\n`;
+  }
+  if (matras.warranty) {
+    response += `🛡️ Гарантия: ${matras.warranty}\n`;
   }
   
-  if (matras.price) {
-    response += `💰 Цена: ${matras.price} руб.\n\n`;
-  }
-  
+  response += '\n';
   response += matras.inStock 
     ? "✅ Матрас есть в наличии." 
     : "⏳ Матрас под заказ.";
