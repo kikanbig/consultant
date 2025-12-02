@@ -25,46 +25,7 @@ function generateResponse(text, endSession = false, additionalData = {}) {
   return response;
 }
 
-// Извлечение номеров стеллажей и полок из команды
-function extractShelfNumbers(command) {
-  const lowerCommand = command.toLowerCase();
-  
-  // Сначала ищем комбинацию "стеллаж X полка Y"
-  const shelfAndLevelMatch = lowerCommand.match(/стеллаж[е]?\s*(?:номер\s*)?(\d+)\s*полка\s*(?:номер\s*)?(\d+)/) ||
-                            lowerCommand.match(/(\d+)\s*стеллаж[е]?\s*полка\s*(?:номер\s*)?(\d+)/);
-  
-  if (shelfAndLevelMatch) {
-    return {
-      shelfId: shelfAndLevelMatch[1].toString(),
-      levelId: shelfAndLevelMatch[2].toString()
-    };
-  }
-  
-  // Затем ищем только стеллаж
-  const shelfMatch = lowerCommand.match(/стеллаж[е]?\s*(?:номер\s*)?(\d+)/) ||
-                     lowerCommand.match(/(\d+)\s*стеллаж[е]?/);
-  
-  if (shelfMatch) {
-    return {
-      shelfId: shelfMatch[1].toString(),
-      levelId: null
-    };
-  }
-  
-  // Затем ищем только полку
-  const levelMatch = lowerCommand.match(/полка\s*(?:номер\s*)?(\d+)/) ||
-                     lowerCommand.match(/(\d+)\s*полка/) ||
-                     lowerCommand.match(/(\d+)\s*полке/);
-  
-  if (levelMatch) {
-    return {
-      shelfId: null,
-      levelId: levelMatch[1].toString()
-    };
-  }
-  
-  return { shelfId: null, levelId: null };
-}
+// УДАЛЕНО: Функция extractShelfNumbers (больше не используется)
 
 // Определение намерения пользователя
 function extractIntent(command) {
@@ -78,32 +39,8 @@ function extractIntent(command) {
     return 'show_device_id';
   }
   
-  // Сначала проверяем прямые запросы о стеллажах с номерами
-  const shelfNumbers = extractShelfNumbers(command);
-  if ((shelfNumbers.shelfId || shelfNumbers.levelId) && (lowerCommand.includes('стеллаж') || lowerCommand.includes('полка'))) {
-    return {
-      intent: 'shelf_direct',
-      shelfId: shelfNumbers.shelfId,
-      levelId: shelfNumbers.levelId
-    };
-  }
-  
-  // Ключевые слова для определения интентов (порядок важен - специфичные сначала)
+  // Ключевые слова для определения интентов (только нужные команды)
   const intents = {
-    help: ['помощь', 'справка', 'что ты умеешь', 'что умеешь', 'как дела', 'помоги', 'что можешь'],
-    
-    shelf_question: [
-      'что стоит на этой полке', 'что находится на полке', 'что на этой полке',
-      'что это за товар', 'что стоит на полке', 'что находится здесь',
-      'что это', 'что здесь', 'что на полке', 'что тут стоит'
-    ],
-    
-    shelf_info: [
-      'что на стеллаже', 'что стоит на стеллаже', 'стеллаж номер', 'стеллаж',
-      'полка номер', 'на полке', 'что в стеллаже', 'покажи стеллаж',
-      'информация о стеллаже', 'что есть на стеллаже'
-    ],
-    
     user_greeting: [
       'привет', 'здравствуй', 'здравствуйте', 'добро пожаловать',
       'доброе утро', 'добрый день', 'добрый вечер', 'приветствую',
@@ -116,23 +53,11 @@ function extractIntent(command) {
       'что это за артикул', 'информация по артикулу'
     ],
     
-    specific_product: [
-      'комфорт', 'релакс', 'трансформер', 'мечта', 'элегант', 'классик',
-      'угловой', 'раскладной', 'двуспальная', 'односпальная', 'купе', 'распашной',
-      'нужен диван', 'нужна кровать', 'хочу диван', 'диван комфорт', 'диван релакс',
-      'кровать мечта', 'диван трансформер', 'угловой диван', 'раскладной диван'
-    ],
-    
-    detailed_info: [
-      'подробнее', 'детали', 'характеристики', 'размеры', 'материал', 'цвета',
-      'модели', 'полное описание', 'все модели', 'весь ассортимент'
-    ],
-    
     promotions: [
-      'акция', 'акции', 'скидка', 'скидки', 'распродажа', 'предложение', 'цена',
-      'доставка', 'рассрочка', 'бесплатно', 'дешево', 'какие есть акции',
+      'акция', 'акции', 'скидка', 'скидки', 'распродажа', 'предложение',
+      'доставка', 'рассрочка', 'какие есть акции',
       'есть ли акции', 'какие акции', 'акционные', 'есть ли скидки', 
-      'какие предложения', 'что по ценам'
+      'какие предложения', 'что по ценам', 'какие скидки'
     ],
     
     consultation: [
@@ -140,17 +65,6 @@ function extractIntent(command) {
       'заказ', 'купить', 'оформить', 'нужен консультант',
       'позовите', 'вызовите', 'администратор',
       'нужна помощь', 'консультация'
-    ],
-    
-    product_search: [
-      'подобрать', 'найти', 'выбрать', 'поиск', 'нужен', 'хочу',
-      'маленький', 'большой', 'красный', 'синий', 'дешевый', 'дорогой'
-    ],
-    
-    category_info: [
-      'диван', 'кровать', 'шкаф', 'стол', 'кресло', 'комод',
-      'расскажи про диван', 'расскажи про кровать', 'расскажи про шкаф',
-      'что есть', 'какие', 'покажи', 'мебель'
     ],
     
     goodbye: [
@@ -276,7 +190,6 @@ function validateResponse(response) {
 module.exports = {
   generateResponse,
   extractIntent,
-  extractShelfNumbers,
   generateProductCard,
   formatProductsList,
   randomChoice,
