@@ -1,6 +1,7 @@
 const { generateResponse, extractIntent } = require('../utils/responseGenerator');
 const content = require('../config/content');
 const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
+const { generateMatrasResponse } = require('../utils/matrasSearch');
 const { 
   getWelcomeMessage, 
   getPromotionsMessage,
@@ -36,6 +37,9 @@ async function handleRequest(body) {
   switch (intent) {
     case 'show_device_id':
       return handleShowDeviceId(body);
+    
+    case 'matras_search':
+      return handleMatrasSearch(request.command);
     
     case 'user_greeting':
       return handleUserGreeting(body);
@@ -157,6 +161,16 @@ function handleUserGreeting(body) {
   );
 }
 
+// Обработка поиска матрасов по названию модели
+function handleMatrasSearch(command) {
+  const result = generateMatrasResponse(command);
+  
+  return generateResponse(
+    result.response + getActiveReminder(),
+    false
+  );
+}
+
 // Обработка поиска по артикулу (с зональной фильтрацией)
 function handleArticleSearch(command, body) {
   // Сначала преобразуем слова в цифры для поддержки "восемь четыре семь четыре..."
@@ -193,6 +207,16 @@ function handleArticleSearch(command, body) {
 
 // Обработка неопознанных команд
 function handleDefaultResponse(command, body) {
+  const { location } = getPersonalizedContent(body);
+  
+  // Специальное сообщение для зоны матрасов
+  if (location === 'matrasy1') {
+    return generateResponse(
+      "Тут такие классные матрасы, я еще сонная, не поняла ваш вопрос. " + getActiveReminder(),
+      false
+    );
+  }
+  
   const suggestions = [
     "Назовите артикул товара для получения информации.",
     "Хотите узнать об акциях?",

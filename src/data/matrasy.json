@@ -1,0 +1,196 @@
+{
+  "matrasy": [
+    {
+      "id": "veluna-laoma",
+      "brand": "Veluna",
+      "model": "Laoma",
+      "fullName": "Veluna Laoma",
+      "aliases": [
+        "veluna laoma",
+        "велуна лаома",
+        "велуна лаома",
+        "велюна лаома",
+        "лаома",
+        "laoma"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Veluna Laoma _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "veluna-palato",
+      "brand": "Veluna",
+      "model": "Palato",
+      "fullName": "Veluna Palato",
+      "aliases": [
+        "veluna palato",
+        "велуна палато",
+        "велюна палато",
+        "палато",
+        "palato"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Veluna Palato _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-alma",
+      "brand": "Lagoma",
+      "model": "Alma",
+      "fullName": "Lagoma Alma",
+      "aliases": [
+        "lagoma alma",
+        "лагома альма",
+        "лагома алма",
+        "альма",
+        "алма",
+        "alma"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Alma _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-asker",
+      "brand": "Lagoma",
+      "model": "Asker",
+      "fullName": "Lagoma Asker",
+      "aliases": [
+        "lagoma asker",
+        "лагома аскер",
+        "лагома аскэр",
+        "аскер",
+        "аскэр",
+        "asker"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Asker _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-glatta",
+      "brand": "Lagoma",
+      "model": "Glatta",
+      "fullName": "Lagoma Glatta",
+      "aliases": [
+        "lagoma glatta",
+        "лагома глатта",
+        "лагома глата",
+        "глатта",
+        "глата",
+        "glatta"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Glatta _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-ilta",
+      "brand": "Lagoma",
+      "model": "Ilta",
+      "fullName": "Lagoma Ilta",
+      "aliases": [
+        "lagoma ilta",
+        "лагома ильта",
+        "лагома илта",
+        "ильта",
+        "илта",
+        "ilta"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Ilta _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-lenvik",
+      "brand": "Lagoma",
+      "model": "Lenvik",
+      "fullName": "Lagoma Lenvik",
+      "aliases": [
+        "lagoma lenvik",
+        "лагома ленвик",
+        "лагома ленвік",
+        "ленвик",
+        "ленвік",
+        "lenvik"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Lenvik _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-lund",
+      "brand": "Lagoma",
+      "model": "Lund",
+      "fullName": "Lagoma Lund",
+      "aliases": [
+        "lagoma lund",
+        "лагома лунд",
+        "лагома ланд",
+        "лунд",
+        "ланд",
+        "lund"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Lund _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-narvik",
+      "brand": "Lagoma",
+      "model": "Narvik",
+      "fullName": "Lagoma Narvik",
+      "aliases": [
+        "lagoma narvik",
+        "лагома нарвик",
+        "лагома нарвік",
+        "нарвик",
+        "нарвік",
+        "narvik"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Narvik _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    },
+    {
+      "id": "lagoma-ulvik",
+      "brand": "Lagoma",
+      "model": "Ulvik",
+      "fullName": "Lagoma Ulvik",
+      "aliases": [
+        "lagoma ulvik",
+        "лагома ульвик",
+        "лагома улвик",
+        "лагома ульвік",
+        "ульвик",
+        "улвик",
+        "ульвік",
+        "ulvik"
+      ],
+      "description": "ДОБАВЬТЕ ОПИСАНИЕ ИЗ ФАЙЛА 'Lagoma Ulvik _ описание.docx'",
+      "features": [],
+      "price": null,
+      "sizes": [],
+      "inStock": true
+    }
+  ]
+}
+
