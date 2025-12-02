@@ -21,6 +21,14 @@ function generateResponse(text, endSession = false, additionalData = {}) {
   if (additionalData.card) {
     response.response.card = additionalData.card;
   }
+  
+  // Устанавливаем максимальный таймаут сессии (3600 секунд = 1 час)
+  // Это максимальное значение, которое поддерживает Яндекс.Диалоги
+  if (!endSession) {
+    response.session_state = {
+      timeout: 3600
+    };
+  }
 
   return response;
 }
