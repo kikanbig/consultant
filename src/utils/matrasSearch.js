@@ -7,9 +7,22 @@ const matrasData = require('../data/matrasy.json');
 function findMatrasByName(query) {
   const lowerQuery = query.toLowerCase().trim();
   
-  // Ищем по всем алиасам
+  // Специальная обработка для бренда без модели
+  if (lowerQuery === 'veluna' || lowerQuery === 'велуна' || lowerQuery === 'велюна') {
+    return 'multiple_veluna';
+  }
+  if (lowerQuery === 'lagoma' || lowerQuery === 'лагома') {
+    return 'multiple_lagoma';
+  }
+  
+  // Ищем по всем алиасам (кроме общих брендовых)
   for (const matras of matrasData.matrasy) {
     for (const alias of matras.aliases) {
+      // Пропускаем общие названия брендов
+      if (alias === 'veluna' || alias === 'велуна' || alias === 'велюна' || 
+          alias === 'lagoma' || alias === 'лагома') {
+        continue;
+      }
       if (lowerQuery.includes(alias.toLowerCase())) {
         return matras;
       }
@@ -29,6 +42,27 @@ function generateMatrasResponse(query) {
     return {
       found: false,
       response: "Тут такие классные матрасы, я еще сонная, не поняла ваш вопрос. Можете повторить название модели?"
+    };
+  }
+  
+  // Обработка запроса бренда без конкретной модели
+  if (matras === 'multiple_veluna') {
+    return {
+      found: true,
+      response: "У нас есть два премиальных матраса Veluna:\n\n" +
+        "🛏️ Veluna Laoma - высота 30 см, 7 зон поддержки\n" +
+        "🛏️ Veluna Palato - высота 35 см, 5 зон поддержки\n\n" +
+        "Про какую модель хотите узнать подробнее?"
+    };
+  }
+  
+  if (matras === 'multiple_lagoma') {
+    return {
+      found: true,
+      response: "У нас есть 8 моделей матрасов Lagoma:\n\n" +
+        "🛏️ Alma, Asker, Glatta, Ilta\n" +
+        "🛏️ Lenvik, Lund, Narvik, Ulvik\n\n" +
+        "Назовите конкретную модель, и я расскажу подробнее!"
     };
   }
   
