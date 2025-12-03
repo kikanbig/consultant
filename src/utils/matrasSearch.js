@@ -69,32 +69,35 @@ function generateMatrasResponse(query) {
   let response = `🛏️ ${matras.fullName}\n\n`;
   response += `${matras.description}\n\n`;
   
-  if (matras.features && matras.features.length > 0) {
-    response += `✨ Особенности:\n`;
-    matras.features.forEach(feature => {
-      response += `• ${feature}\n`;
-    });
-    response += '\n';
+  // Характеристики (компактно)
+  let specs = [];
+  if (matras.height) specs.push(`📏 ${matras.height}`);
+  if (matras.firmness) specs.push(`💪 ${matras.firmness}`);
+  if (matras.maxLoad) specs.push(`⚖️ до ${matras.maxLoad}`);
+  if (matras.warranty) specs.push(`🛡️ ${matras.warranty}`);
+  
+  if (specs.length > 0) {
+    response += specs.join(' | ') + '\n\n';
   }
   
-  // Характеристики
-  if (matras.height) {
-    response += `📏 Высота: ${matras.height}\n`;
-  }
-  if (matras.firmness) {
-    response += `💪 Жесткость: ${matras.firmness}\n`;
-  }
-  if (matras.maxLoad) {
-    response += `⚖️ Макс. нагрузка: ${matras.maxLoad}\n`;
-  }
-  if (matras.warranty) {
-    response += `🛡️ Гарантия: ${matras.warranty}\n`;
-  }
-  
-  response += '\n';
   response += matras.inStock 
-    ? "✅ Матрас есть в наличии." 
-    : "⏳ Матрас под заказ.";
+    ? "✅ Есть в наличии." 
+    : "⏳ Под заказ.";
+  
+  // Обрезаем если превышает лимит Алисы (1024 символа)
+  if (response.length > 1000) {
+    // Обрезаем описание, оставляя место для остального
+    const maxDescLen = 600;
+    if (matras.description.length > maxDescLen) {
+      const shortDesc = matras.description.substring(0, maxDescLen) + '...';
+      response = `🛏️ ${matras.fullName}\n\n`;
+      response += `${shortDesc}\n\n`;
+      if (specs.length > 0) {
+        response += specs.join(' | ') + '\n\n';
+      }
+      response += matras.inStock ? "✅ Есть в наличии." : "⏳ Под заказ.";
+    }
+  }
   
   return {
     found: true,

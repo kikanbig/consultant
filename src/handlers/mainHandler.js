@@ -18,18 +18,19 @@ const SESSION_STATES = {
 
 // Основной обработчик запросов
 async function handleRequest(body) {
-  const { request, session, version } = body;
-  
-  // Новая сессия
-  if (session.new) {
-    return handleNewSession(body);
-  }
-  
-  // Обработка команд
-  const intentResult = extractIntent(request.command);
-  const sessionState = session.session_id ? SESSION_STATES.START : SESSION_STATES.START;
-  
-  console.log(`Intent: ${intentResult}, State: ${sessionState}`);
+  try {
+    const { request, session, version } = body;
+    
+    // Новая сессия
+    if (session.new) {
+      return handleNewSession(body);
+    }
+    
+    // Обработка команд
+    const intentResult = extractIntent(request.command);
+    const sessionState = session.session_id ? SESSION_STATES.START : SESSION_STATES.START;
+    
+    console.log(`Intent: ${intentResult}, State: ${sessionState}`);
   
   // Получаем intent
   const intent = intentResult;
@@ -58,6 +59,14 @@ async function handleRequest(body) {
     
     default:
       return handleDefaultResponse(request.command, body);
+  }
+  } catch (error) {
+    // Глобальный обработчик ошибок
+    console.error('Ошибка в handleRequest:', error);
+    return generateResponse(
+      "Ой, что-то пошло не так. Попробуйте повторить вопрос или спросите что-нибудь другое.",
+      false
+    );
   }
 }
 

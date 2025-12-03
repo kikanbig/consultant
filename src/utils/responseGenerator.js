@@ -2,9 +2,16 @@ const { convertWordsToDigits } = require('./articleSearch');
 
 // Генерация ответа в формате Алисы
 function generateResponse(text, endSession = false, additionalData = {}) {
+  // Проверяем и обрезаем текст если превышает лимит Алисы (1024 символа)
+  let safeText = text;
+  if (text && text.length > 1020) {
+    console.warn(`Текст превышает лимит: ${text.length} символов. Обрезаем...`);
+    safeText = text.substring(0, 1017) + '...';
+  }
+  
   const response = {
     response: {
-      text: text,
+      text: safeText,
       end_session: endSession,
       // Поле для сигнала о том, что навык активно слушает
       should_listen: !endSession
