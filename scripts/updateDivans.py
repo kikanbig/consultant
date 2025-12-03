@@ -13,7 +13,7 @@ from html import unescape
 BRAND_ALIASES = {
     'VELUNA': ['veluna', 'велуна', 'велюна', 'илуна', 'iluna', 'вилуна'],
     'ELVA': ['elva', 'элва', 'эльва', 'елва', 'ельва'],
-    'Rivalli': ['rivalli', 'ривалли', 'ривали', 'риваллі'],
+    'Rivalli': ['rivalli', 'ривалли', 'ривали', 'риваллі', 'revolut', 'револют', 'револю'],
     'Мебельград': ['мебельград', 'mebelgrad', 'мебелград'],
     'Mio Tesoro': ['mio tesoro', 'мио тесоро', 'мио тезоро', 'миа тесоро', 'миа тезоро', 'mia tesoro', 'mio', 'миа', 'мио'],
     'Moon Trade': ['moon trade', 'мун трейд', 'мун трэйд', 'moon', 'мун'],
@@ -58,6 +58,15 @@ TRANSLIT_MAP = {
     'tuuli': ['туули', 'туулі'],
     'toivo': ['тойво', 'тоіво'],
     'jersey': ['джерси', 'джерсі', 'джерси'],
+    'emma': ['эмма', 'емма'],
+    'dijon': ['дижон', 'діжон'],
+    'orleans': ['орлеан', 'орлеан'],
+    'parma': ['парма', 'парма'],
+    'discovery': ['дискавери', 'дискавері'],
+    'porto': ['порто', 'порто'],
+    'somerset': ['сомерсет', 'сомерсет'],
+    'rimini': ['риммини', 'римини'],
+    'valencia': ['валенсия', 'валенсія'],
     # Общие буквы (для остальных случаев)
     'a': 'а', 'b': 'б', 'v': 'в', 'g': 'г', 'd': 'д', 'e': 'е',
     'z': 'з', 'i': 'и', 'k': 'к', 'l': 'л', 'm': 'м', 'n': 'н',
@@ -103,6 +112,19 @@ def generate_model_aliases(model_name):
         if first_word in TRANSLIT_MAP and isinstance(TRANSLIT_MAP[first_word], list):
             for variant in TRANSLIT_MAP[first_word]:
                 aliases.add(variant)
+    
+    # ВАЖНО: Ищем латинский ключ для кириллического слова
+    # Например, для "эмма" находим ключ "emma"
+    for word in words:
+        for lat_key, cyr_variants in TRANSLIT_MAP.items():
+            if isinstance(cyr_variants, list) and word in cyr_variants:
+                # Нашли! Добавляем латинский ключ
+                aliases.add(lat_key)
+                # И с остальными словами
+                other_words = [w for w in words if w != word]
+                if other_words:
+                    aliases.add(' '.join([lat_key] + other_words))
+                    aliases.add(' '.join(other_words + [lat_key]))
     
     # Убираем слишком короткие алиасы (меньше 3 символов)
     aliases = {a for a in aliases if len(a) >= 3}
