@@ -74,15 +74,15 @@ function generateMatrasResponse(query) {
   let response = `🛏️ ${matras.fullName}\n\n`;
   response += `${matras.description}\n\n`;
   
-  // Характеристики (компактно)
+  // Характеристики (с полными названиями)
   let specs = [];
-  if (matras.height) specs.push(`📏 ${matras.height}`);
-  if (matras.firmness) specs.push(`💪 ${matras.firmness}`);
-  if (matras.maxLoad) specs.push(`⚖️ до ${matras.maxLoad}`);
-  if (matras.warranty) specs.push(`🛡️ ${matras.warranty}`);
+  if (matras.height) specs.push(`Высота: ${matras.height}`);
+  if (matras.firmness) specs.push(`Жесткость: ${matras.firmness}`);
+  if (matras.maxLoad) specs.push(`Максимальная нагрузка: до ${matras.maxLoad}`);
+  if (matras.warranty) specs.push(`Гарантия: ${matras.warranty}`);
   
   if (specs.length > 0) {
-    response += specs.join(' | ') + '\n\n';
+    response += specs.join('\n') + '\n\n';
   }
   
   response += matras.inStock 
@@ -91,16 +91,16 @@ function generateMatrasResponse(query) {
   
   // Обрезаем если превышает лимит Алисы (1024 символа)
   if (response.length > 1000) {
-    // Обрезаем описание, оставляя место для остального
-    const maxDescLen = 900;
+    // Вычисляем, сколько места занимают характеристики и остальное
+    let specsText = specs.join('\n') + '\n\n';
+    let statusText = matras.inStock ? "✅ Есть в наличии." : "⏳ Под заказ.";
+    let overhead = `🛏️ ${matras.fullName}\n\n`.length + specsText.length + statusText.length;
+    
+    // Обрезаем описание, чтобы уложиться в 1000 символов
+    const maxDescLen = 1000 - overhead - 3; // -3 для "..."
     if (matras.description.length > maxDescLen) {
       const shortDesc = matras.description.substring(0, maxDescLen) + '...';
-      response = `🛏️ ${matras.fullName}\n\n`;
-      response += `${shortDesc}\n\n`;
-      if (specs.length > 0) {
-        response += specs.join(' | ') + '\n\n';
-      }
-      response += matras.inStock ? "✅ Есть в наличии." : "⏳ Под заказ.";
+      response = `🛏️ ${matras.fullName}\n\n${shortDesc}\n\n${specsText}${statusText}`;
     }
   }
   
