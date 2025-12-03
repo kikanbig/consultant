@@ -2,7 +2,7 @@ const matrasData = require('../data/matrasy.json');
 
 /**
  * Поиск матраса по названию модели
- * Алиса может передавать текст как на кириллице, так и на латинице!
+ * УНИВЕРСАЛЬНЫЙ ПОИСК через алиасы из JSON
  */
 function findMatrasByName(query) {
   const lowerQuery = query.toLowerCase().trim();
@@ -10,100 +10,28 @@ function findMatrasByName(query) {
   // Логируем для отладки
   console.log(`🔍 Поиск матраса: "${lowerQuery}"`);
   
-  // === VELUNA (велуна/veluna) ===
-  if (lowerQuery.includes('велуна') || lowerQuery.includes('велюна') || lowerQuery.includes('veluna')) {
-    // Laoma
-    if (lowerQuery.includes('лаома') || lowerQuery.includes('laoma')) {
-      return matrasData.matrasy.find(m => m.id === 'veluna-laoma');
+  // Проверяем бренды (для показа списка моделей)
+  const velunaBrands = ['велуна', 'велюна', 'veluna', 'илуна', 'iluna', 'вилуна'];
+  const lagomaBrands = ['лагома', 'lagoma', 'лагуна', 'lagoona', 'лагона', 'lagona'];
+  
+  let hasVelunaBrand = velunaBrands.some(brand => lowerQuery.includes(brand));
+  let hasLagomaBrand = lagomaBrands.some(brand => lowerQuery.includes(brand));
+  
+  // Ищем точное совпадение по алиасам
+  for (const matras of matrasData.matrasy) {
+    for (const alias of matras.aliases) {
+      if (lowerQuery.includes(alias.toLowerCase())) {
+        return matras;
+      }
     }
-    // Palato
-    if (lowerQuery.includes('палато') || lowerQuery.includes('палатто') || 
-        lowerQuery.includes('palato') || lowerQuery.includes('palatto')) {
-      return matrasData.matrasy.find(m => m.id === 'veluna-palato');
-    }
-    // Только бренд
+  }
+  
+  // Если нашли только бренд без модели - показываем список
+  if (hasVelunaBrand && !hasLagomaBrand) {
     return 'multiple_veluna';
   }
-  
-  // === LAGOMA (лагома/lagoma) ===
-  if (lowerQuery.includes('лагома') || lowerQuery.includes('lagoma')) {
-    // Alma
-    if (lowerQuery.includes('альма') || lowerQuery.includes('алма') || lowerQuery.includes('alma')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-alma');
-    }
-    // Asker
-    if (lowerQuery.includes('аскер') || lowerQuery.includes('аскэр') || lowerQuery.includes('оскер') || 
-        lowerQuery.includes('asker')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-asker');
-    }
-    // Glatta
-    if (lowerQuery.includes('глатта') || lowerQuery.includes('глата') || lowerQuery.includes('глатто') ||
-        lowerQuery.includes('glatta') || lowerQuery.includes('glattta') || lowerQuery.includes('glata')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-glatta');
-    }
-    // Ilta
-    if (lowerQuery.includes('ильта') || lowerQuery.includes('илта') || lowerQuery.includes('ilta')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-ilta');
-    }
-    // Lenvik
-    if (lowerQuery.includes('ленвик') || lowerQuery.includes('lenvik')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-lenvik');
-    }
-    // Lund
-    if (lowerQuery.includes('лунд') || lowerQuery.includes('ланд') || lowerQuery.includes('лунт') ||
-        lowerQuery.includes('lund')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-lund');
-    }
-    // Narvik
-    if (lowerQuery.includes('нарвик') || lowerQuery.includes('норвик') || lowerQuery.includes('narvik')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-narvik');
-    }
-    // Ulvik
-    if (lowerQuery.includes('ульвик') || lowerQuery.includes('улвик') || lowerQuery.includes('ulvik')) {
-      return matrasData.matrasy.find(m => m.id === 'lagoma-ulvik');
-    }
-    // Только бренд
+  if (hasLagomaBrand && !hasVelunaBrand) {
     return 'multiple_lagoma';
-  }
-  
-  // === ПОИСК ТОЛЬКО ПО МОДЕЛИ (без бренда) ===
-  
-  // Veluna модели
-  if (lowerQuery.includes('лаома') || lowerQuery.includes('laoma')) {
-    return matrasData.matrasy.find(m => m.id === 'veluna-laoma');
-  }
-  if (lowerQuery.includes('палато') || lowerQuery.includes('палатто') || 
-      lowerQuery.includes('palato') || lowerQuery.includes('palatto')) {
-    return matrasData.matrasy.find(m => m.id === 'veluna-palato');
-  }
-  
-  // Lagoma модели
-  if (lowerQuery.includes('альма') || lowerQuery.includes('алма') || lowerQuery.includes('alma')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-alma');
-  }
-  if (lowerQuery.includes('аскер') || lowerQuery.includes('аскэр') || lowerQuery.includes('оскер') || 
-      lowerQuery.includes('asker')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-asker');
-  }
-  if (lowerQuery.includes('глатта') || lowerQuery.includes('глата') || lowerQuery.includes('глатто') ||
-      lowerQuery.includes('glatta') || lowerQuery.includes('glattta') || lowerQuery.includes('glata')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-glatta');
-  }
-  if (lowerQuery.includes('ильта') || lowerQuery.includes('илта') || lowerQuery.includes('ilta')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-ilta');
-  }
-  if (lowerQuery.includes('ленвик') || lowerQuery.includes('lenvik')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-lenvik');
-  }
-  if (lowerQuery.includes('лунд') || lowerQuery.includes('ланд') || lowerQuery.includes('лунт') ||
-      lowerQuery.includes('lund')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-lund');
-  }
-  if (lowerQuery.includes('нарвик') || lowerQuery.includes('норвик') || lowerQuery.includes('narvik')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-narvik');
-  }
-  if (lowerQuery.includes('ульвик') || lowerQuery.includes('улвик') || lowerQuery.includes('ulvik')) {
-    return matrasData.matrasy.find(m => m.id === 'lagoma-ulvik');
   }
   
   return null;
