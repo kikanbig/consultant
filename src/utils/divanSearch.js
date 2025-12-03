@@ -100,7 +100,7 @@ function findDivanByKod(kod) {
 }
 
 /**
- * Поиск дивана по бренду и модели
+ * Поиск дивана по бренду и модели (с использованием алиасов из JSON)
  */
 function findDivanByBrandModel(query) {
   const lowerQuery = query.toLowerCase().trim();
@@ -119,53 +119,50 @@ function findDivanByBrandModel(query) {
     }
   }
   
-  // Затем ищем по бренду и модели
+  // Затем ищем по алиасам бренда и модели из JSON
   for (const divan of divansData.divans) {
-    const divanBrand = divan.brand.toLowerCase();
-    const divanModel = divan.model.toLowerCase();
-    const divanName = divan.name.toLowerCase();
-    
-    // Проверяем бренд через алиасы
+    // Проверяем бренд через алиасы из JSON
     let brandMatch = false;
-    for (const [canonical, aliases] of Object.entries(brandAliases)) {
-      if (aliases.some(alias => lowerQuery.includes(alias))) {
-        // Проверяем, соответствует ли бренд дивана этому каноническому бренду
-        if (aliases.some(alias => divanBrand.includes(alias) || divanName.includes(alias))) {
-          brandMatch = true;
-          break;
-        }
-      }
+    
+    if (divan.brandAliases && Array.isArray(divan.brandAliases)) {
+      brandMatch = divan.brandAliases.some(alias => 
+        lowerQuery.includes(alias.toLowerCase()) || 
+        translitQuery.includes(alias.toLowerCase())
+      );
     }
     
-    // Если бренд не найден через алиасы, проверяем прямое вхождение
-    if (!brandMatch && divanBrand && lowerQuery.includes(divanBrand)) {
-      brandMatch = true;
+    // Fallback: прямое вхождение бренда
+    if (!brandMatch && divan.brand) {
+      const divanBrand = divan.brand.toLowerCase();
+      brandMatch = lowerQuery.includes(divanBrand) || translitQuery.includes(divanBrand);
     }
     
     if (brandMatch) {
-      // Проверяем модель (частичное совпадение)
-      // Берём первое слово модели (основное название)
-      const modelFirstWord = divanModel.split(/\s+/)[0];
+      // Проверяем модель через алиасы из JSON
+      let modelMatch = false;
       
-      if (modelFirstWord && (lowerQuery.includes(modelFirstWord) || translitQuery.includes(modelFirstWord))) {
-        return divan;
+      if (divan.modelAliases && Array.isArray(divan.modelAliases)) {
+        modelMatch = divan.modelAliases.some(alias => {
+          const aliasLower = alias.toLowerCase();
+          return lowerQuery.includes(aliasLower) || 
+                 translitQuery.includes(aliasLower) ||
+                 aliasLower.includes(lowerQuery) ||
+                 aliasLower.includes(translitQuery);
+        });
       }
       
-      // Также проверяем все слова модели
-      const modelWords = divanModel.split(/\s+/).filter(w => w.length > 2);
-      const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2);
-      const translitWords = translitQuery.split(/\s+/).filter(w => w.length > 2);
+      // Fallback: прямое вхождение модели
+      if (!modelMatch && divan.model) {
+        const divanModel = divan.model.toLowerCase();
+        const modelFirstWord = divanModel.split(/\s+/)[0];
+        
+        modelMatch = lowerQuery.includes(modelFirstWord) || 
+                     translitQuery.includes(modelFirstWord) ||
+                     lowerQuery.includes(divanModel) ||
+                     translitQuery.includes(divanModel);
+      }
       
-      const hasModelMatch = modelWords.some(modelWord => 
-        queryWords.some(queryWord => 
-          queryWord.includes(modelWord) || modelWord.includes(queryWord)
-        ) ||
-        translitWords.some(translitWord => 
-          translitWord.includes(modelWord) || modelWord.includes(translitWord)
-        )
-      );
-      
-      if (hasModelMatch) {
+      if (modelMatch) {
         return divan;
       }
     }
