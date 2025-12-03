@@ -2,8 +2,7 @@ const matrasData = require('../data/matrasy.json');
 
 /**
  * Поиск матраса по названию модели
- * Алиса передаёт текст на русском - как слышит
- * Lagoma → лагома, Veluna → велуна
+ * Алиса может передавать текст как на кириллице, так и на латинице!
  */
 function findMatrasByName(query) {
   const lowerQuery = query.toLowerCase().trim();
@@ -11,83 +10,99 @@ function findMatrasByName(query) {
   // Логируем для отладки
   console.log(`🔍 Поиск матраса: "${lowerQuery}"`);
   
-  // Специальная обработка для бренда без модели
-  // Veluna = велуна, велюна
-  if (lowerQuery.includes('велуна') || lowerQuery.includes('велюна')) {
-    // Проверяем, есть ли конкретная модель
+  // === VELUNA (велуна/veluna) ===
+  if (lowerQuery.includes('велуна') || lowerQuery.includes('велюна') || lowerQuery.includes('veluna')) {
+    // Laoma
     if (lowerQuery.includes('лаома') || lowerQuery.includes('laoma')) {
       return matrasData.matrasy.find(m => m.id === 'veluna-laoma');
     }
-    if (lowerQuery.includes('палато') || lowerQuery.includes('палатто')) {
+    // Palato
+    if (lowerQuery.includes('палато') || lowerQuery.includes('палатто') || 
+        lowerQuery.includes('palato') || lowerQuery.includes('palatto')) {
       return matrasData.matrasy.find(m => m.id === 'veluna-palato');
     }
-    // Если только бренд - показываем список
+    // Только бренд
     return 'multiple_veluna';
   }
   
-  // Lagoma = лагома
-  if (lowerQuery.includes('лагома')) {
-    // Проверяем конкретные модели
-    if (lowerQuery.includes('альма') || lowerQuery.includes('алма')) {
+  // === LAGOMA (лагома/lagoma) ===
+  if (lowerQuery.includes('лагома') || lowerQuery.includes('lagoma')) {
+    // Alma
+    if (lowerQuery.includes('альма') || lowerQuery.includes('алма') || lowerQuery.includes('alma')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-alma');
     }
-    if (lowerQuery.includes('аскер') || lowerQuery.includes('аскэр') || lowerQuery.includes('оскер')) {
+    // Asker
+    if (lowerQuery.includes('аскер') || lowerQuery.includes('аскэр') || lowerQuery.includes('оскер') || 
+        lowerQuery.includes('asker')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-asker');
     }
-    if (lowerQuery.includes('глатта') || lowerQuery.includes('глата') || lowerQuery.includes('глатто')) {
+    // Glatta
+    if (lowerQuery.includes('глатта') || lowerQuery.includes('глата') || lowerQuery.includes('глатто') ||
+        lowerQuery.includes('glatta') || lowerQuery.includes('glattta') || lowerQuery.includes('glata')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-glatta');
     }
-    if (lowerQuery.includes('ильта') || lowerQuery.includes('илта')) {
+    // Ilta
+    if (lowerQuery.includes('ильта') || lowerQuery.includes('илта') || lowerQuery.includes('ilta')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-ilta');
     }
-    if (lowerQuery.includes('ленвик')) {
+    // Lenvik
+    if (lowerQuery.includes('ленвик') || lowerQuery.includes('lenvik')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-lenvik');
     }
-    if (lowerQuery.includes('лунд') || lowerQuery.includes('ланд') || lowerQuery.includes('лунт')) {
+    // Lund
+    if (lowerQuery.includes('лунд') || lowerQuery.includes('ланд') || lowerQuery.includes('лунт') ||
+        lowerQuery.includes('lund')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-lund');
     }
-    if (lowerQuery.includes('нарвик') || lowerQuery.includes('норвик')) {
+    // Narvik
+    if (lowerQuery.includes('нарвик') || lowerQuery.includes('норвик') || lowerQuery.includes('narvik')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-narvik');
     }
-    if (lowerQuery.includes('ульвик') || lowerQuery.includes('улвик')) {
+    // Ulvik
+    if (lowerQuery.includes('ульвик') || lowerQuery.includes('улвик') || lowerQuery.includes('ulvik')) {
       return matrasData.matrasy.find(m => m.id === 'lagoma-ulvik');
     }
-    // Если только бренд - показываем список
+    // Только бренд
     return 'multiple_lagoma';
   }
   
-  // Поиск по названию модели без бренда
-  // Модели Veluna
-  if (lowerQuery.includes('лаома')) {
+  // === ПОИСК ТОЛЬКО ПО МОДЕЛИ (без бренда) ===
+  
+  // Veluna модели
+  if (lowerQuery.includes('лаома') || lowerQuery.includes('laoma')) {
     return matrasData.matrasy.find(m => m.id === 'veluna-laoma');
   }
-  if (lowerQuery.includes('палато') || lowerQuery.includes('палатто')) {
+  if (lowerQuery.includes('палато') || lowerQuery.includes('палатто') || 
+      lowerQuery.includes('palato') || lowerQuery.includes('palatto')) {
     return matrasData.matrasy.find(m => m.id === 'veluna-palato');
   }
   
-  // Модели Lagoma
-  if (lowerQuery.includes('альма') || lowerQuery.includes('алма')) {
+  // Lagoma модели
+  if (lowerQuery.includes('альма') || lowerQuery.includes('алма') || lowerQuery.includes('alma')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-alma');
   }
-  if (lowerQuery.includes('аскер') || lowerQuery.includes('аскэр') || lowerQuery.includes('оскер')) {
+  if (lowerQuery.includes('аскер') || lowerQuery.includes('аскэр') || lowerQuery.includes('оскер') || 
+      lowerQuery.includes('asker')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-asker');
   }
-  if (lowerQuery.includes('глатта') || lowerQuery.includes('глата') || lowerQuery.includes('глатто')) {
+  if (lowerQuery.includes('глатта') || lowerQuery.includes('глата') || lowerQuery.includes('глатто') ||
+      lowerQuery.includes('glatta') || lowerQuery.includes('glattta') || lowerQuery.includes('glata')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-glatta');
   }
-  if (lowerQuery.includes('ильта') || lowerQuery.includes('илта')) {
+  if (lowerQuery.includes('ильта') || lowerQuery.includes('илта') || lowerQuery.includes('ilta')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-ilta');
   }
-  if (lowerQuery.includes('ленвик')) {
+  if (lowerQuery.includes('ленвик') || lowerQuery.includes('lenvik')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-lenvik');
   }
-  if (lowerQuery.includes('лунд') || lowerQuery.includes('ланд') || lowerQuery.includes('лунт')) {
+  if (lowerQuery.includes('лунд') || lowerQuery.includes('ланд') || lowerQuery.includes('лунт') ||
+      lowerQuery.includes('lund')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-lund');
   }
-  if (lowerQuery.includes('нарвик') || lowerQuery.includes('норвик')) {
+  if (lowerQuery.includes('нарвик') || lowerQuery.includes('норвик') || lowerQuery.includes('narvik')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-narvik');
   }
-  if (lowerQuery.includes('ульвик') || lowerQuery.includes('улвик')) {
+  if (lowerQuery.includes('ульвик') || lowerQuery.includes('улвик') || lowerQuery.includes('ulvik')) {
     return matrasData.matrasy.find(m => m.id === 'lagoma-ulvik');
   }
   
