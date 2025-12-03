@@ -1,6 +1,57 @@
 const divansData = require('../data/divans.json');
 
 /**
+ * Транслитерация латиницы в кириллицу для поиска
+ */
+function transliterate(text) {
+  // Специальные случаи для конкретных названий (приоритет)
+  const specialCases = {
+    'yuki': 'юкки',
+    'yukki': 'юкки',
+    'gizela': 'гизела',
+    'chianti': 'кьянти',
+    'kyanti': 'кьянти',
+    'vito': 'вито',
+    'bilbao': 'бильбао',
+    'pekin': 'пекин',
+    'beijing': 'пекин',
+    'aisti': 'айсти',
+    'isti': 'исти',
+    'miami': 'майами',
+    'aspen': 'аспен',
+    'leyton': 'лейтон',
+    'evas': 'эвас',
+    'sonni': 'сонни',
+    'eloy': 'элой',
+    'kubo': 'кубо'
+  };
+  
+  // Общая транслитерация
+  const map = {
+    'shch': 'щ', 'yo': 'ё', 'zh': 'ж', 'ch': 'ч', 'sh': 'ш', 
+    'yu': 'ю', 'ya': 'я', 'ts': 'ц',
+    'a': 'а', 'b': 'б', 'v': 'в', 'g': 'г', 'd': 'д', 'e': 'е',
+    'z': 'з', 'i': 'и', 'y': 'й', 'k': 'к', 'l': 'л', 'm': 'м',
+    'n': 'н', 'o': 'о', 'p': 'п', 'r': 'р', 's': 'с', 't': 'т', 
+    'u': 'у', 'f': 'ф', 'h': 'х', 'w': 'в', 'x': 'кс', 'j': 'дж'
+  };
+  
+  let result = text.toLowerCase();
+  
+  // Сначала заменяем специальные случаи
+  for (const [lat, cyr] of Object.entries(specialCases)) {
+    result = result.replace(new RegExp(lat, 'g'), cyr);
+  }
+  
+  // Затем общую транслитерацию (длинные комбинации первыми)
+  for (const [lat, cyr] of Object.entries(map).sort((a, b) => b[0].length - a[0].length)) {
+    result = result.replace(new RegExp(lat, 'g'), cyr);
+  }
+  
+  return result;
+}
+
+/**
  * Алиасы для брендов (латиница и кириллица)
  */
 const brandAliases = {
@@ -53,13 +104,17 @@ function findDivanByKod(kod) {
  */
 function findDivanByBrandModel(query) {
   const lowerQuery = query.toLowerCase().trim();
+  const translitQuery = transliterate(lowerQuery);
   
   console.log(`🔍 Поиск дивана: "${lowerQuery}"`);
+  if (translitQuery !== lowerQuery) {
+    console.log(`   Транслит: "${translitQuery}"`);
+  }
   
   // Сначала пробуем найти точное совпадение по полному названию
   for (const divan of divansData.divans) {
     const divanName = divan.name.toLowerCase();
-    if (divanName.includes(lowerQuery) && lowerQuery.length > 5) {
+    if ((divanName.includes(lowerQuery) || divanName.includes(translitQuery)) && lowerQuery.length > 5) {
       return divan;
     }
   }
@@ -92,17 +147,21 @@ function findDivanByBrandModel(query) {
       // Берём первое слово модели (основное название)
       const modelFirstWord = divanModel.split(/\s+/)[0];
       
-      if (modelFirstWord && lowerQuery.includes(modelFirstWord)) {
+      if (modelFirstWord && (lowerQuery.includes(modelFirstWord) || translitQuery.includes(modelFirstWord))) {
         return divan;
       }
       
       // Также проверяем все слова модели
       const modelWords = divanModel.split(/\s+/).filter(w => w.length > 2);
       const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2);
+      const translitWords = translitQuery.split(/\s+/).filter(w => w.length > 2);
       
       const hasModelMatch = modelWords.some(modelWord => 
         queryWords.some(queryWord => 
           queryWord.includes(modelWord) || modelWord.includes(queryWord)
+        ) ||
+        translitWords.some(translitWord => 
+          translitWord.includes(modelWord) || modelWord.includes(translitWord)
         )
       );
       
