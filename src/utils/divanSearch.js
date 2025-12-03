@@ -168,6 +168,41 @@ function findDivanByBrandModel(query) {
     }
   }
   
+  // НОВАЯ ЛОГИКА: Поиск только по модели без бренда
+  // Если не нашли с брендом, пробуем найти только по модели
+  console.log(`   Поиск только по модели...`);
+  
+  for (const divan of divansData.divans) {
+    // Проверяем модель через алиасы
+    if (divan.modelAliases && Array.isArray(divan.modelAliases)) {
+      const modelMatch = divan.modelAliases.some(alias => {
+        const aliasLower = alias.toLowerCase();
+        // Проверяем точное совпадение или вхождение
+        return aliasLower === lowerQuery || 
+               aliasLower === translitQuery ||
+               (lowerQuery.length > 3 && aliasLower.includes(lowerQuery)) ||
+               (translitQuery.length > 3 && aliasLower.includes(translitQuery));
+      });
+      
+      if (modelMatch) {
+        console.log(`   ✓ Найден по модели: ${divan.brand} ${divan.model}`);
+        return divan;
+      }
+    }
+    
+    // Fallback: прямое совпадение с моделью
+    if (divan.model) {
+      const divanModel = divan.model.toLowerCase();
+      const modelFirstWord = divanModel.split(/\s+/)[0];
+      
+      if (modelFirstWord.length > 3 && 
+          (lowerQuery.includes(modelFirstWord) || translitQuery.includes(modelFirstWord))) {
+        console.log(`   ✓ Найден по первому слову модели: ${divan.brand} ${divan.model}`);
+        return divan;
+      }
+    }
+  }
+  
   return null;
 }
 
