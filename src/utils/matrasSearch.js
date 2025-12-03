@@ -87,7 +87,7 @@ function generateMatrasResponse(query) {
   // Обрезаем если превышает лимит Алисы (1024 символа)
   if (response.length > 1000) {
     // Обрезаем описание, оставляя место для остального
-    const maxDescLen = 600;
+    const maxDescLen = 900;
     if (matras.description.length > maxDescLen) {
       const shortDesc = matras.description.substring(0, maxDescLen) + '...';
       response = `🛏️ ${matras.fullName}\n\n`;
