@@ -2,6 +2,7 @@ const { generateResponse, extractIntent } = require('../utils/responseGenerator'
 const content = require('../config/content');
 const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
 const { generateMatrasResponse } = require('../utils/matrasSearch');
+const { generateDivanResponse } = require('../utils/divanSearch');
 const { 
   getWelcomeMessage, 
   getPromotionsMessage,
@@ -39,8 +40,11 @@ async function handleRequest(body) {
     case 'show_device_id':
       return handleShowDeviceId(body);
     
+    case 'divan_search':
+      return handleDivanSearch(request.command, body);
+    
     case 'matras_search':
-      return handleMatrasSearch(request.command);
+      return handleMatrasSearch(request.command, body);
     
     case 'user_greeting':
       return handleUserGreeting(body);
@@ -171,13 +175,39 @@ function handleUserGreeting(body) {
 }
 
 // Обработка поиска матрасов по названию модели
-function handleMatrasSearch(command) {
+// Обработка поиска дивана
+function handleDivanSearch(command, body) {
+  const { location } = getPersonalizedContent(body);
+  
+  // Только для колонок Диван 1 и Диван 2
+  if (location !== 'divans1' && location !== 'divans2') {
+    return generateResponse("Извините, я могу рассказать о диванах только в зоне диванов.", false);
+  }
+  
+  const result = generateDivanResponse(command);
+  
+  if (!result.found) {
+    return generateResponse(result.response + ' ' + getActiveReminder(), false);
+  }
+  
+  return generateResponse(result.response, false);
+}
+
+function handleMatrasSearch(command, body) {
+  const { location } = getPersonalizedContent(body);
+  
+  // Только для колонки Матрасы 1
+  if (location !== 'matrasy1') {
+    return generateResponse("Тут такие классные матрасы, я еще сонная, не поняла ваш вопрос.", false);
+  }
+  
   const result = generateMatrasResponse(command);
   
-  return generateResponse(
-    result.response + getActiveReminder(),
-    false
-  );
+  if (!result.found) {
+    return generateResponse(result.response + ' ' + getActiveReminder(), false);
+  }
+  
+  return generateResponse(result.response, false);
 }
 
 // Обработка поиска по артикулу (с зональной фильтрацией)

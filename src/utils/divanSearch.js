@@ -1,0 +1,190 @@
+const divansData = require('../data/divans.json');
+
+/**
+ * Алиасы для брендов (латиница и кириллица)
+ */
+const brandAliases = {
+  'veluna': ['veluna', 'велуна', 'велюна', 'илуна', 'iluna', 'вилуна'],
+  'elva': ['elva', 'элва', 'эльва', 'елва', 'ельва'],
+  'rivalli': ['rivalli', 'ривалли', 'ривали', 'риваллі', 'rivali'],
+  'мебельград': ['мебельград', 'mebelgrad', 'мебелград', 'мебельграт'],
+  'mio tesoro': ['mio tesoro', 'мио тесоро', 'мио тезоро', 'миа тесоро', 'миа тезоро', 'мио', 'миа', 'mia tesoro', 'mia'],
+  'anderssen': ['anderssen', 'андерссен', 'андерсен', 'андерсон', 'андерсcен'],
+  'moon trade': ['moon trade', 'мун трейд', 'мун трэйд', 'мун трейт', 'moon', 'мун'],
+  'woodcraft': ['woodcraft', 'вудкрафт', 'вудкрафт', 'вуткрафт', 'wood craft'],
+  'leset': ['leset', 'лесет', 'лесэт', 'лесет'],
+  'homeme': ['homeme', 'хомми', 'хоумми', 'хомме', 'home me'],
+  'askona': ['askona', 'аскона', 'аскона'],
+  'lazurit': ['lazurit', 'лазурит', 'лазурит'],
+  'pushe': ['pushe', 'пуше', 'пушэ', 'пуш'],
+  'moon': ['moon', 'мун', 'мун'],
+  'first': ['first', 'фирст', 'фёрст', 'ферст']
+};
+
+/**
+ * Нормализация бренда - приведение к единому виду
+ */
+function normalizeBrand(brand) {
+  const lowerBrand = brand.toLowerCase().trim();
+  
+  for (const [canonical, aliases] of Object.entries(brandAliases)) {
+    if (aliases.some(alias => lowerBrand.includes(alias) || alias.includes(lowerBrand))) {
+      return canonical;
+    }
+  }
+  
+  return lowerBrand;
+}
+
+/**
+ * Поиск дивана по коду товара
+ */
+function findDivanByKod(kod) {
+  // Убираем все нецифровые символы
+  const cleanKod = String(kod).replace(/\D/g, '');
+  
+  return divansData.divans.find(d => 
+    String(d.kod).replace(/\D/g, '') === cleanKod
+  );
+}
+
+/**
+ * Поиск дивана по бренду и модели
+ */
+function findDivanByBrandModel(query) {
+  const lowerQuery = query.toLowerCase().trim();
+  
+  console.log(`🔍 Поиск дивана: "${lowerQuery}"`);
+  
+  // Сначала пробуем найти точное совпадение по полному названию
+  for (const divan of divansData.divans) {
+    const divanName = divan.name.toLowerCase();
+    if (divanName.includes(lowerQuery) && lowerQuery.length > 5) {
+      return divan;
+    }
+  }
+  
+  // Затем ищем по бренду и модели
+  for (const divan of divansData.divans) {
+    const divanBrand = divan.brand.toLowerCase();
+    const divanModel = divan.model.toLowerCase();
+    const divanName = divan.name.toLowerCase();
+    
+    // Проверяем бренд через алиасы
+    let brandMatch = false;
+    for (const [canonical, aliases] of Object.entries(brandAliases)) {
+      if (aliases.some(alias => lowerQuery.includes(alias))) {
+        // Проверяем, соответствует ли бренд дивана этому каноническому бренду
+        if (aliases.some(alias => divanBrand.includes(alias) || divanName.includes(alias))) {
+          brandMatch = true;
+          break;
+        }
+      }
+    }
+    
+    // Если бренд не найден через алиасы, проверяем прямое вхождение
+    if (!brandMatch && divanBrand && lowerQuery.includes(divanBrand)) {
+      brandMatch = true;
+    }
+    
+    if (brandMatch) {
+      // Проверяем модель (частичное совпадение)
+      // Берём первое слово модели (основное название)
+      const modelFirstWord = divanModel.split(/\s+/)[0];
+      
+      if (modelFirstWord && lowerQuery.includes(modelFirstWord)) {
+        return divan;
+      }
+      
+      // Также проверяем все слова модели
+      const modelWords = divanModel.split(/\s+/).filter(w => w.length > 2);
+      const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2);
+      
+      const hasModelMatch = modelWords.some(modelWord => 
+        queryWords.some(queryWord => 
+          queryWord.includes(modelWord) || modelWord.includes(queryWord)
+        )
+      );
+      
+      if (hasModelMatch) {
+        return divan;
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Генерация ответа с описанием дивана
+ */
+function generateDivanResponse(query) {
+  // Сначала пробуем найти по коду (если в запросе есть 5+ цифр подряд)
+  const kodMatch = query.match(/\d{5,}/);
+  if (kodMatch) {
+    const divan = findDivanByKod(kodMatch[0]);
+    if (divan) {
+      return formatDivanResponse(divan);
+    }
+  }
+  
+  // Иначе ищем по бренду и модели
+  const divan = findDivanByBrandModel(query);
+  
+  if (!divan) {
+    return {
+      found: false,
+      response: "Не могу найти такой диван. Назовите код товара или артикул."
+    };
+  }
+  
+  return formatDivanResponse(divan);
+}
+
+/**
+ * Форматирование ответа о диване
+ */
+function formatDivanResponse(divan) {
+  let response = `🛋️ ${divan.name}\n\n`;
+  response += `Код товара: ${divan.kod}\n\n`;
+  
+  // Добавляем описание
+  let description = divan.description;
+  
+  // Обрезаем если превышает лимит (оставляем место для заголовка и кода)
+  const maxDescLen = 850; // Лимит для описания
+  if (description.length > maxDescLen) {
+    description = description.substring(0, maxDescLen) + '...';
+  }
+  
+  response += description;
+  
+  // Финальная проверка длины
+  if (response.length > 1000) {
+    const overhead = `🛋️ ${divan.name}\n\nКод товара: ${divan.kod}\n\n`.length;
+    const maxDesc = 1000 - overhead - 3;
+    description = divan.description.substring(0, maxDesc) + '...';
+    response = `🛋️ ${divan.name}\n\nКод товара: ${divan.kod}\n\n${description}`;
+  }
+  
+  return {
+    found: true,
+    response: response,
+    divan: divan
+  };
+}
+
+/**
+ * Получить все диваны
+ */
+function getAllDivans() {
+  return divansData.divans;
+}
+
+module.exports = {
+  findDivanByKod,
+  findDivanByBrandModel,
+  generateDivanResponse,
+  getAllDivans
+};
+
