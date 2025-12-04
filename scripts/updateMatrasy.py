@@ -35,6 +35,7 @@ TRANSLIT_MAP = {
     # Veluna модели
     'laoma': ['лаома', 'лаомо', 'лоома', 'лаамо'],
     'palato': ['палато', 'палатто', 'палата', 'полато', 'палотто'],
+    'palatto': ['палато', 'палатто'],  # Частая ошибка
     
     # Латинские варианты
     'lanwick': ['ленвик'],
@@ -68,10 +69,14 @@ def generate_model_aliases_enhanced(model_name, brand_name):
     
     # Варианты бренда
     brand_variants = []
+    brand_variants_latin = []
+    
     if brand_lower == 'lagoma':
         brand_variants = ['лагома', 'лагуна', 'лагона', 'логома', 'лагомо']
+        brand_variants_latin = ['lagoma', 'lagooma', 'lagona', 'logoma', 'lagomo']
     elif brand_lower == 'veluna':
-        brand_variants = ['велуна', 'велюна', 'илуна', 'вилуна', 'вэлуна']
+        brand_variants = ['велуна', 'велюна', 'илуна', 'вилуна', 'вэлуна', 'велуно', 'велюно', 'илуно', 'вилуно']
+        brand_variants_latin = ['veluna', 'veluno', 'veluna', 'iluna', 'iluno', 'viluna', 'viluno']
     
     # Фонетические варианты модели
     for variant in generate_phonetic_variants(model_lower):
@@ -90,7 +95,7 @@ def generate_model_aliases_enhanced(model_name, brand_name):
         if model_lower in cyr_variants:
             aliases.add(lat_key)
     
-    # Комбинации с брендом
+    # Комбинации с брендом (кириллица)
     for brand_var in brand_variants:
         aliases.add(f"{brand_var} {model_lower}")
         
@@ -99,7 +104,18 @@ def generate_model_aliases_enhanced(model_name, brand_name):
             for translit in TRANSLIT_MAP[model_lower]:
                 aliases.add(f"{brand_var} {translit}")
     
-    # Латинские комбинации
+    # Латинские комбинации с брендом
+    for brand_lat in brand_variants_latin:
+        aliases.add(f"{brand_lat} {model_lower}")
+        
+        # С транслитерациями
+        if model_lower in TRANSLIT_MAP:
+            for translit in TRANSLIT_MAP[model_lower]:
+                # Только латинские транслитерации
+                if any(c in 'abcdefghijklmnopqrstuvwxyz' for c in translit):
+                    aliases.add(f"{brand_lat} {translit}")
+    
+    # Базовые латинские комбинации
     aliases.add(f"{brand_lower} {model_lower}")
     
     # Убираем слишком короткие алиасы
