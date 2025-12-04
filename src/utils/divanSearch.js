@@ -23,7 +23,18 @@ function transliterate(text) {
     'evas': 'эвас',
     'sonni': 'сонни',
     'eloy': 'элой',
-    'kubo': 'кубо'
+    'kubo': 'кубо',
+    'montreal': 'монреаль',
+    'douglas': 'дуглас',
+    'emma': 'эмма',
+    'dijon': 'дижон',
+    'orleans': 'орлеан',
+    'parma': 'парма',
+    'discovery': 'дискавери',
+    'porto': 'порто',
+    'somerset': 'сомерсет',
+    'rimini': 'римини',
+    'valencia': 'валенсия'
   };
   
   // Общая транслитерация
@@ -103,7 +114,15 @@ function findDivanByKod(kod) {
  * Поиск дивана по бренду и модели (с использованием алиасов из JSON)
  */
 function findDivanByBrandModel(query) {
-  const lowerQuery = query.toLowerCase().trim();
+  let lowerQuery = query.toLowerCase().trim();
+  
+  // Убираем служебные слова из запроса
+  const stopWords = ['диван', 'кресло', 'расскажи', 'про', 'о', 'об', 'мне', 'пожалуйста', 'хочу', 'узнать'];
+  stopWords.forEach(word => {
+    lowerQuery = lowerQuery.replace(new RegExp(`\\b${word}\\b`, 'g'), '').trim();
+  });
+  lowerQuery = lowerQuery.replace(/\s+/g, ' ').trim(); // Убираем лишние пробелы
+  
   const translitQuery = transliterate(lowerQuery);
   
   console.log(`🔍 Поиск дивана: "${lowerQuery}"`);
@@ -177,11 +196,11 @@ function findDivanByBrandModel(query) {
     if (divan.modelAliases && Array.isArray(divan.modelAliases)) {
       const modelMatch = divan.modelAliases.some(alias => {
         const aliasLower = alias.toLowerCase();
-        // Проверяем точное совпадение или вхождение
+        // Проверяем точное совпадение или вхождение в обе стороны
         return aliasLower === lowerQuery || 
                aliasLower === translitQuery ||
-               (lowerQuery.length > 3 && aliasLower.includes(lowerQuery)) ||
-               (translitQuery.length > 3 && aliasLower.includes(translitQuery));
+               (lowerQuery.length > 3 && (aliasLower.includes(lowerQuery) || lowerQuery.includes(aliasLower))) ||
+               (translitQuery.length > 3 && (aliasLower.includes(translitQuery) || translitQuery.includes(aliasLower)));
       });
       
       if (modelMatch) {

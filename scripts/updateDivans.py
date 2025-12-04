@@ -67,6 +67,8 @@ TRANSLIT_MAP = {
     'somerset': ['сомерсет', 'сомерсет'],
     'rimini': ['риммини', 'римини'],
     'valencia': ['валенсия', 'валенсія'],
+    'montreal': ['монреаль', 'монреал', 'монтреаль'],
+    'douglas': ['дуглас', 'даглас'],
     # Общие буквы (для остальных случаев)
     'a': 'а', 'b': 'б', 'v': 'в', 'g': 'г', 'd': 'д', 'e': 'е',
     'z': 'з', 'i': 'и', 'k': 'к', 'l': 'л', 'm': 'м', 'n': 'н',
@@ -112,6 +114,18 @@ def generate_model_aliases(model_name):
         if first_word in TRANSLIT_MAP and isinstance(TRANSLIT_MAP[first_word], list):
             for variant in TRANSLIT_MAP[first_word]:
                 aliases.add(variant)
+    
+    # НОВОЕ: Убираем суффиксы типа "-4", "-2" для поиска по базовому названию
+    # Например: "монреаль-4" → добавляем "монреаль"
+    for word in words:
+        # Убираем цифры и дефисы в конце
+        base_word = re.sub(r'-?\d+$', '', word)
+        if base_word and base_word != word and len(base_word) >= 3:
+            aliases.add(base_word)
+            # И транслитерация базового слова
+            if base_word in TRANSLIT_MAP and isinstance(TRANSLIT_MAP[base_word], list):
+                for variant in TRANSLIT_MAP[base_word]:
+                    aliases.add(variant)
     
     # ВАЖНО: Ищем латинский ключ для кириллического слова
     # Например, для "эмма" находим ключ "emma"
