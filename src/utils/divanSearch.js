@@ -99,15 +99,62 @@ function normalizeBrand(brand) {
 }
 
 /**
- * Поиск дивана по коду товара
+ * Конвертирует произнесённые цифры в числа
+ * Например: "один ноль ноль семь" → "1007"
+ */
+function spokenDigitsToNumbers(text) {
+  const digitMap = {
+    'ноль': '0', 'нуль': '0',
+    'один': '1', 'раз': '1', 'адин': '1',
+    'два': '2', 'двойка': '2',
+    'три': '3', 'тройка': '3',
+    'четыре': '4', 'четверка': '4', 'читыре': '4',
+    'пять': '5', 'пятерка': '5', 'пьять': '5',
+    'шесть': '6', 'шестерка': '6', 'шэсть': '6',
+    'семь': '7', 'семерка': '7', 'сем': '7',
+    'восемь': '8', 'восьмерка': '8', 'восем': '8',
+    'девять': '9', 'девятка': '9', 'дивять': '9'
+  };
+  
+  let result = '';
+  const words = text.toLowerCase().split(/\s+/);
+  
+  for (const word of words) {
+    if (digitMap[word]) {
+      result += digitMap[word];
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Поиск дивана по коду товара (артикулу)
+ * Поддерживает как цифры, так и произнесённые названия цифр
  */
 function findDivanByKod(kod) {
   // Убираем все нецифровые символы
   const cleanKod = String(kod).replace(/\D/g, '');
   
-  return divansData.divans.find(d => 
-    String(d.kod).replace(/\D/g, '') === cleanKod
-  );
+  // Если есть цифры, ищем по ним
+  if (cleanKod.length > 0) {
+    const found = divansData.divans.find(d => 
+      String(d.kod).replace(/\D/g, '') === cleanKod
+    );
+    if (found) return found;
+  }
+  
+  // Пробуем конвертировать произнесённые цифры
+  const spokenNumber = spokenDigitsToNumbers(String(kod));
+  if (spokenNumber.length >= 4) {  // Минимум 4 цифры для поиска
+    return divansData.divans.find(d => {
+      const divanKod = String(d.kod).replace(/\D/g, '');
+      // Ищем частичное совпадение (начало или полное)
+      return divanKod.startsWith(spokenNumber) || divanKod === spokenNumber;
+    });
+  }
+  
+  return null;
 }
 
 /**
@@ -234,6 +281,16 @@ function generateDivanResponse(query) {
   if (kodMatch) {
     const divan = findDivanByKod(kodMatch[0]);
     if (divan) {
+      return formatDivanResponse(divan);
+    }
+  }
+  
+  // Если есть ключевые слова "артикул", "код", "номер" - пробуем искать по произнесённым цифрам
+  const hasArticleKeyword = /артикул|код|номер/.test(query.toLowerCase());
+  if (hasArticleKeyword) {
+    const divan = findDivanByKod(query);
+    if (divan) {
+      console.log(`   ✓ Найден по артикулу (произнесённые цифры)`);
       return formatDivanResponse(divan);
     }
   }

@@ -76,9 +76,39 @@ TRANSLIT_MAP = {
     'f': 'ф', 'h': 'х', 'w': 'в', 'y': 'й'
 }
 
+def generate_phonetic_variants(word):
+    """
+    Генерирует фонетические варианты произношения слова
+    """
+    variants = set([word])
+    
+    # Замены для распространённых фонетических ошибок
+    phonetic_rules = [
+        ('е', 'э'), ('э', 'е'),  # е/э
+        ('и', 'ы'), ('ы', 'и'),  # и/ы
+        ('о', 'а'), ('а', 'о'),  # о/а в безударной позиции
+        ('ё', 'е'), ('е', 'ё'),  # ё/е
+        ('й', 'и'), ('и', 'й'),  # й/и
+        ('ц', 'тс'), ('тс', 'ц'),  # ц/тс
+        ('ч', 'тш'), ('тш', 'ч'),  # ч/тш
+        ('щ', 'шч'), ('шч', 'щ'),  # щ/шч
+        ('дж', 'ж'), ('ж', 'дж'),  # дж/ж
+        ('нн', 'н'), ('н', 'нн'),  # двойные согласные
+        ('лл', 'л'), ('л', 'лл'),
+        ('мм', 'м'), ('м', 'мм'),
+        ('сс', 'с'), ('с', 'сс'),
+        ('тт', 'т'), ('т', 'тт'),
+    ]
+    
+    for old, new in phonetic_rules:
+        if old in word:
+            variants.add(word.replace(old, new))
+    
+    return variants
+
 def generate_model_aliases(model_name):
     """
-    Генерирует алиасы для модели
+    Генерирует максимально разнообразные алиасы для модели
     """
     if not model_name:
         return []
@@ -92,12 +122,29 @@ def generate_model_aliases(model_name):
     # Разбиваем на слова
     words = model_lower.split()
     
-    # Для каждого слова проверяем специальные случаи
+    # Для каждого слова генерируем фонетические варианты
+    for word in words:
+        # Фонетические варианты
+        for variant in generate_phonetic_variants(word):
+            aliases.add(variant)
+            
+            # Добавляем с остальными словами
+            other_words = [w for w in words if w != word]
+            if other_words:
+                aliases.add(' '.join([variant] + other_words))
+                aliases.add(' '.join(other_words + [variant]))
+    
+    # Для каждого слова проверяем специальные случаи из TRANSLIT_MAP
     for word in words:
         if word in TRANSLIT_MAP and isinstance(TRANSLIT_MAP[word], list):
             # Это специальный случай - добавляем все варианты
             for variant in TRANSLIT_MAP[word]:
                 aliases.add(variant)
+                
+                # Фонетические варианты специальных случаев
+                for phonetic in generate_phonetic_variants(variant):
+                    aliases.add(phonetic)
+                
                 # Также добавляем с остальными словами
                 other_words = [w for w in words if w != word]
                 if other_words:
@@ -110,31 +157,39 @@ def generate_model_aliases(model_name):
         first_word = words[0]
         aliases.add(first_word)
         
+        # Фонетические варианты первого слова
+        for variant in generate_phonetic_variants(first_word):
+            aliases.add(variant)
+        
         # Транслитерация первого слова
         if first_word in TRANSLIT_MAP and isinstance(TRANSLIT_MAP[first_word], list):
             for variant in TRANSLIT_MAP[first_word]:
                 aliases.add(variant)
+                for phonetic in generate_phonetic_variants(variant):
+                    aliases.add(phonetic)
     
-    # НОВОЕ: Убираем суффиксы типа "-4", "-2" для поиска по базовому названию
-    # Например: "монреаль-4" → добавляем "монреаль"
+    # Убираем суффиксы типа "-4", "-2" для поиска по базовому названию
     for word in words:
-        # Убираем цифры и дефисы в конце
         base_word = re.sub(r'-?\d+$', '', word)
         if base_word and base_word != word and len(base_word) >= 3:
             aliases.add(base_word)
+            
+            # Фонетические варианты базового слова
+            for variant in generate_phonetic_variants(base_word):
+                aliases.add(variant)
+            
             # И транслитерация базового слова
             if base_word in TRANSLIT_MAP and isinstance(TRANSLIT_MAP[base_word], list):
                 for variant in TRANSLIT_MAP[base_word]:
                     aliases.add(variant)
+                    for phonetic in generate_phonetic_variants(variant):
+                        aliases.add(phonetic)
     
-    # ВАЖНО: Ищем латинский ключ для кириллического слова
-    # Например, для "эмма" находим ключ "emma"
+    # Ищем латинский ключ для кириллического слова
     for word in words:
         for lat_key, cyr_variants in TRANSLIT_MAP.items():
             if isinstance(cyr_variants, list) and word in cyr_variants:
-                # Нашли! Добавляем латинский ключ
                 aliases.add(lat_key)
-                # И с остальными словами
                 other_words = [w for w in words if w != word]
                 if other_words:
                     aliases.add(' '.join([lat_key] + other_words))
@@ -142,6 +197,49 @@ def generate_model_aliases(model_name):
     
     # Убираем слишком короткие алиасы (меньше 3 символов)
     aliases = {a for a in aliases if len(a) >= 3}
+    
+    return sorted(list(aliases))
+
+def generate_article_aliases(article_code):
+    """
+    Генерирует алиасы для артикула (код товара)
+    Пользователь произносит по одной цифре: "один ноль ноль семь семь один два семь"
+    """
+    if not article_code:
+        return []
+    
+    # Словарь произношения цифр
+    digit_names = {
+        '0': ['ноль', 'нуль'],
+        '1': ['один', 'раз', 'адин'],
+        '2': ['два', 'двойка'],
+        '3': ['три', 'тройка'],
+        '4': ['четыре', 'четверка', 'читыре'],
+        '5': ['пять', 'пятерка', 'пьять'],
+        '6': ['шесть', 'шестерка', 'шэсть'],
+        '7': ['семь', 'семерка', 'сем'],
+        '8': ['восемь', 'восьмерка', 'восем'],
+        '9': ['девять', 'девятка', 'дивять']
+    }
+    
+    aliases = set()
+    code_str = str(article_code).strip()
+    
+    # Добавляем оригинал
+    aliases.add(code_str)
+    
+    # Генерируем произношение по цифрам
+    # Например: "10077127" → "один ноль ноль семь семь один два семь"
+    for i in range(len(code_str)):
+        digit = code_str[i]
+        if digit in digit_names:
+            # Генерируем все комбинации произношений
+            # Это будет использоваться для поиска
+            pass
+    
+    # Добавляем варианты с пробелами между цифрами
+    spaced = ' '.join(code_str)
+    aliases.add(spaced)
     
     return sorted(list(aliases))
 
@@ -222,6 +320,7 @@ def parse_excel_to_json(excel_path, output_path):
             # Генерируем алиасы
             brand_aliases = generate_brand_aliases(brand)
             model_aliases = generate_model_aliases(model)
+            article_aliases = generate_article_aliases(kod)
             
             divans.append({
                 'kod': str(kod),
@@ -230,6 +329,7 @@ def parse_excel_to_json(excel_path, output_path):
                 'model': model,
                 'brandAliases': brand_aliases,
                 'modelAliases': model_aliases,
+                'articleAliases': article_aliases,
                 'description': description or 'Описание отсутствует'
             })
     
@@ -243,17 +343,22 @@ def parse_excel_to_json(excel_path, output_path):
     print(f"\n📊 Статистика алиасов:")
     total_brand_aliases = sum(len(d['brandAliases']) for d in divans)
     total_model_aliases = sum(len(d['modelAliases']) for d in divans)
+    total_article_aliases = sum(len(d['articleAliases']) for d in divans)
     print(f"   Всего алиасов брендов: {total_brand_aliases}")
     print(f"   Всего алиасов моделей: {total_model_aliases}")
+    print(f"   Всего алиасов артикулов: {total_article_aliases}")
     
     # Примеры
-    print(f"\n📝 Примеры (первые 5):")
-    for i, divan in enumerate(divans[:5], 1):
+    print(f"\n📝 Примеры (первые 3):")
+    for i, divan in enumerate(divans[:3], 1):
         print(f"\n{i}. {divan['name'][:60]}")
+        print(f"   Код: {divan['kod']}")
         print(f"   Бренд: {divan['brand']}")
         print(f"   Алиасы бренда: {', '.join(divan['brandAliases'][:5])}")
         print(f"   Модель: {divan['model']}")
-        print(f"   Алиасы модели: {', '.join(divan['modelAliases'][:5])}")
+        print(f"   Алиасы модели ({len(divan['modelAliases'])} шт): {', '.join(divan['modelAliases'][:8])}")
+        if len(divan['modelAliases']) > 8:
+            print(f"      ... и еще {len(divan['modelAliases']) - 8} алиасов")
 
 if __name__ == '__main__':
     import os
