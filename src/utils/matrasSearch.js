@@ -11,13 +11,30 @@ function findMatrasByName(query) {
   console.log(`🔍 Поиск матраса: "${lowerQuery}"`);
   
   // Проверяем бренды (для показа списка моделей)
-  const velunaBrands = ['велуна', 'велюна', 'veluna', 'илуна', 'iluna', 'вилуна'];
-  const lagomaBrands = ['лагома', 'lagoma', 'лагуна', 'lagoona', 'лагона', 'lagona'];
+  const velunaBrands = ['велуна', 'велюна', 'veluna', 'илуна', 'iluna', 'вилуна', 'виллуна', 'велуно', 'илуно', 'вилуно', 'виллуно'];
+  const lagomaBrands = ['лагома', 'lagoma', 'лагуна', 'lagoona', 'лагона', 'lagona', 'лагоома', 'лагоума', 'лагомма', 'логома'];
   
   let hasVelunaBrand = velunaBrands.some(brand => lowerQuery.includes(brand));
   let hasLagomaBrand = lagomaBrands.some(brand => lowerQuery.includes(brand));
   
-  // Ищем точное совпадение по алиасам
+  // УЛУЧШЕННАЯ ЛОГИКА: Ищем сначала по полным алиасам (точное совпадение)
+  // Это предотвращает ложные срабатывания типа "лагоума илта" → Alma (из-за "аума")
+  for (const matras of matrasData.matrasy) {
+    for (const alias of matras.aliases) {
+      const aliasLower = alias.toLowerCase();
+      // Точное совпадение или полное вхождение с пробелами
+      if (lowerQuery === aliasLower || 
+          lowerQuery === `расскажи про ${aliasLower}` ||
+          lowerQuery === `про ${aliasLower}` ||
+          lowerQuery.includes(` ${aliasLower} `) ||
+          lowerQuery.startsWith(`${aliasLower} `) ||
+          lowerQuery.endsWith(` ${aliasLower}`)) {
+        return matras;
+      }
+    }
+  }
+  
+  // Если точного совпадения нет, ищем по вхождению (старая логика)
   for (const matras of matrasData.matrasy) {
     for (const alias of matras.aliases) {
       if (lowerQuery.includes(alias.toLowerCase())) {

@@ -72,11 +72,11 @@ def generate_model_aliases_enhanced(model_name, brand_name):
     brand_variants_latin = []
     
     if brand_lower == 'lagoma':
-        brand_variants = ['лагома', 'лагуна', 'лагона', 'логома', 'лагомо']
-        brand_variants_latin = ['lagoma', 'lagooma', 'lagona', 'logoma', 'lagomo']
+        brand_variants = ['лагома', 'лагуна', 'лагона', 'логома', 'лагомо', 'лагоома', 'лагоума', 'лагомма']
+        brand_variants_latin = ['lagoma', 'lagooma', 'lagona', 'logoma', 'lagomo', 'lagouma']
     elif brand_lower == 'veluna':
-        brand_variants = ['велуна', 'велюна', 'илуна', 'вилуна', 'вэлуна', 'велуно', 'велюно', 'илуно', 'вилуно']
-        brand_variants_latin = ['veluna', 'veluno', 'veluna', 'iluna', 'iluno', 'viluna', 'viluno']
+        brand_variants = ['велуна', 'велюна', 'илуна', 'вилуна', 'виллуна', 'вэлуна', 'велуно', 'велюно', 'илуно', 'вилуно', 'виллуно']
+        brand_variants_latin = ['veluna', 'veluno', 'veluna', 'iluna', 'iluno', 'viluna', 'villuna', 'viluno', 'villuno']
     
     # Фонетические варианты модели
     for variant in generate_phonetic_variants(model_lower):
