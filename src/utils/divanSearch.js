@@ -164,11 +164,23 @@ function findDivanByBrandModel(query) {
   let lowerQuery = query.toLowerCase().trim();
   
   // Убираем служебные слова из запроса
-  const stopWords = ['диван', 'кресло', 'расскажи', 'про', 'о', 'об', 'мне', 'пожалуйста', 'хочу', 'узнать'];
-  stopWords.forEach(word => {
-    lowerQuery = lowerQuery.replace(new RegExp(`\\b${word}\\b`, 'g'), '').trim();
-  });
+  const stopWords = ['диван', 'кресло', 'расскажи', 'про', 'о', 'об', 'мне', 'пожалуйста', 'хочу', 'узнать', 'спасибо', 'также', 'хорошо', 'еще', 'ещё'];
+  for (const word of stopWords) {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    lowerQuery = lowerQuery.replace(regex, ' ');
+  }
   lowerQuery = lowerQuery.replace(/\s+/g, ' ').trim(); // Убираем лишние пробелы
+  
+  // ФОНЕТИЧЕСКАЯ НОРМАЛИЗАЦИЯ (как для матрасов)
+  // Исправляем частые ошибки распознавания
+  lowerQuery = lowerQuery
+    .replace(/порта/g, 'порто')
+    .replace(/парта/g, 'порто')
+    .replace(/милано/g, 'милан')
+    .replace(/джижон/g, 'дижон')
+    .replace(/porta/g, 'porto')
+    .replace(/parta/g, 'porto')
+    .replace(/milano/g, 'milan');
   
   const translitQuery = transliterate(lowerQuery);
   
@@ -276,26 +288,32 @@ function findDivanByBrandModel(query) {
  * Генерация ответа с описанием дивана
  */
 function generateDivanResponse(query) {
-  // Сначала пробуем найти по коду (если в запросе есть 5+ цифр подряд)
+  console.log(`🔍 Поиск дивана по запросу: "${query}"`);
+  
+  // ЭТАП 1: Поиск по коду (если в запросе есть 5+ цифр подряд)
   const kodMatch = query.match(/\d{5,}/);
   if (kodMatch) {
+    console.log(`   Найдены цифры в запросе: ${kodMatch[0]}`);
     const divan = findDivanByKod(kodMatch[0]);
     if (divan) {
+      console.log(`   ✓ Найден по коду: ${divan.name}`);
       return formatDivanResponse(divan);
     }
   }
   
-  // Если есть ключевые слова "артикул", "код", "номер" - пробуем искать по произнесённым цифрам
-  const hasArticleKeyword = /артикул|код|номер/.test(query.toLowerCase());
-  if (hasArticleKeyword) {
-    const divan = findDivanByKod(query);
+  // ЭТАП 2: ВСЕГДА пробуем искать по произнесённым цифрам
+  // Конвертируем "один ноль ноль семь" → "1007"
+  const spokenNumber = spokenDigitsToNumbers(query);
+  if (spokenNumber.length >= 4) {
+    console.log(`   Обнаружены произнесённые цифры: "${spokenNumber}"`);
+    const divan = findDivanByKod(spokenNumber);
     if (divan) {
-      console.log(`   ✓ Найден по артикулу (произнесённые цифры)`);
+      console.log(`   ✓ Найден по произнесённым цифрам: ${divan.name}`);
       return formatDivanResponse(divan);
     }
   }
   
-  // Иначе ищем по бренду и модели
+  // ЭТАП 3: Поиск по бренду и модели
   const divan = findDivanByBrandModel(query);
   
   if (!divan) {
