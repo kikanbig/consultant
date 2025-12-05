@@ -29,7 +29,10 @@ function findMatrasByName(query) {
     .replace(/лагуна/g, 'велуна')
     .replace(/паллата/g, 'палато')
     .replace(/паллато/g, 'палато')
-    .replace(/palatta/g, 'palato');
+    .replace(/palatta/g, 'palato')
+    .replace(/palate/g, 'palato')
+    .replace(/pallate/g, 'palato')
+    .replace(/палате/g, 'палато');
   
   console.log(`🔍 Поиск матраса (нормализованный): "${cleanedQuery}"`);
   
