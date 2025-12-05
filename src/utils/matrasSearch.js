@@ -5,52 +5,85 @@ const matrasData = require('../data/matrasy.json');
  * УНИВЕРСАЛЬНЫЙ ПОИСК через алиасы из JSON
  */
 function findMatrasByName(query) {
-  const lowerQuery = query.toLowerCase().trim();
+  let lowerQuery = query.toLowerCase().trim();
   
   // Логируем для отладки
-  console.log(`🔍 Поиск матраса: "${lowerQuery}"`);
+  console.log(`🔍 Поиск матраса (исходный): "${lowerQuery}"`);
   
-  // Проверяем бренды (для показа списка моделей)
-  const velunaBrands = ['велуна', 'велюна', 'veluna', 'илуна', 'iluna', 'вилуна', 'виллуна', 'велуно', 'илуно', 'вилуно', 'виллуно'];
-  const lagomaBrands = ['лагома', 'lagoma', 'лагуна', 'lagoona', 'лагона', 'lagona', 'лагоома', 'лагоума', 'лагомма', 'логома'];
+  // ОЧИСТКА ЗАПРОСА от служебных слов
+  const stopWords = ['алиса', 'расскажи', 'про', 'матрас', 'пожалуйста', 'также', 'хорошо', 'спасибо', 'ещё', 'еще'];
+  let cleanedQuery = lowerQuery;
+  for (const word of stopWords) {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    cleanedQuery = cleanedQuery.replace(regex, ' ');
+  }
+  cleanedQuery = cleanedQuery.replace(/\s+/g, ' ').trim();
   
-  let hasVelunaBrand = velunaBrands.some(brand => lowerQuery.includes(brand));
-  let hasLagomaBrand = lagomaBrands.some(brand => lowerQuery.includes(brand));
+  console.log(`🔍 Поиск матраса (очищенный): "${cleanedQuery}"`);
   
-  // УЛУЧШЕННАЯ ЛОГИКА: Ищем сначала по полным алиасам (точное совпадение)
-  // Это предотвращает ложные срабатывания типа "лагоума илта" → Alma (из-за "аума")
+  // ФОНЕТИЧЕСКАЯ НОРМАЛИЗАЦИЯ для частых ошибок
+  // "lagoona" → "veluna" (Алиса часто путает!)
+  cleanedQuery = cleanedQuery
+    .replace(/lagoona/g, 'veluna')
+    .replace(/laguna/g, 'veluna')
+    .replace(/лагуна/g, 'велуна')
+    .replace(/паллата/g, 'палато')
+    .replace(/паллато/g, 'палато')
+    .replace(/palatta/g, 'palato');
+  
+  console.log(`🔍 Поиск матраса (нормализованный): "${cleanedQuery}"`);
+  
+  // ЭТАП 1: Поиск по полным алиасам (точное совпадение)
   for (const matras of matrasData.matrasy) {
     for (const alias of matras.aliases) {
       const aliasLower = alias.toLowerCase();
-      // Точное совпадение или полное вхождение с пробелами
-      if (lowerQuery === aliasLower || 
-          lowerQuery === `расскажи про ${aliasLower}` ||
-          lowerQuery === `про ${aliasLower}` ||
-          lowerQuery.includes(` ${aliasLower} `) ||
-          lowerQuery.startsWith(`${aliasLower} `) ||
-          lowerQuery.endsWith(` ${aliasLower}`)) {
+      
+      // Точное совпадение всего запроса
+      if (cleanedQuery === aliasLower) {
+        console.log(`✅ Найден (точное совпадение): ${matras.brand} ${matras.model}`);
+        return matras;
+      }
+      
+      // Алиас с пробелами вокруг
+      if (cleanedQuery.includes(` ${aliasLower} `) ||
+          cleanedQuery.startsWith(`${aliasLower} `) ||
+          cleanedQuery.endsWith(` ${aliasLower}`)) {
+        console.log(`✅ Найден (с пробелами): ${matras.brand} ${matras.model}`);
         return matras;
       }
     }
   }
   
-  // Если точного совпадения нет, ищем по вхождению (старая логика)
+  // ЭТАП 2: Поиск по вхождению (для коротких запросов)
   for (const matras of matrasData.matrasy) {
     for (const alias of matras.aliases) {
-      if (lowerQuery.includes(alias.toLowerCase())) {
+      const aliasLower = alias.toLowerCase();
+      
+      // Ищем вхождение алиаса в запрос
+      if (cleanedQuery.includes(aliasLower)) {
+        console.log(`✅ Найден (вхождение): ${matras.brand} ${matras.model}`);
         return matras;
       }
     }
   }
   
-  // Если нашли только бренд без модели - показываем список
+  // ЭТАП 3: Если ничего не нашли - проверяем бренды для показа списка
+  const velunaBrands = ['велуна', 'велюна', 'veluna', 'илуна', 'iluna', 'вилуна', 'виллуна', 'велуно', 'илуно', 'вилуно', 'виллуно'];
+  const lagomaBrands = ['лагома', 'lagoma', 'лагона', 'lagona', 'лагоома', 'лагоума', 'лагомма', 'логома'];
+  
+  let hasVelunaBrand = velunaBrands.some(brand => cleanedQuery.includes(brand));
+  let hasLagomaBrand = lagomaBrands.some(brand => cleanedQuery.includes(brand));
+  
   if (hasVelunaBrand && !hasLagomaBrand) {
+    console.log(`ℹ️ Найден только бренд Veluna`);
     return 'multiple_veluna';
   }
   if (hasLagomaBrand && !hasVelunaBrand) {
+    console.log(`ℹ️ Найден только бренд Lagoma`);
     return 'multiple_lagoma';
   }
   
+  console.log(`❌ Матрас не найден`);
   return null;
 }
 
