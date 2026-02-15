@@ -3,6 +3,7 @@ const content = require('../config/content');
 const { generateArticleResponse, convertWordsToDigits } = require('../utils/articleSearch');
 const { generateMatrasResponse } = require('../utils/matrasSearch');
 const { generateDivanResponse } = require('../utils/divanSearch');
+const { generateProductResponse } = require('../utils/productSearch');
 const { 
   getWelcomeMessage, 
   getPromotionsMessage,
@@ -212,34 +213,18 @@ function handleMatrasSearch(command, body) {
 
 // Обработка поиска по артикулу (с зональной фильтрацией)
 function handleArticleSearch(command, body) {
-  // Сначала преобразуем слова в цифры для поддержки "восемь четыре семь четыре..."
-  const convertedCommand = convertWordsToDigits(command);
-  
-  // Извлекаем артикул из команды (ищем в оригинальной и преобразованной)
-  let articleMatch = command.match(/(\d{5,})/);
-  if (!articleMatch) {
-    articleMatch = convertedCommand.match(/(\d{5,})/);
-  }
-  
-  if (!articleMatch) {
-    return generateResponse(
-      "Назовите артикул товара. Например: 'артикул 9174297' или просто '9174297'." + getActiveReminder(),
-      false
-    );
-  }
-  
-  const article = articleMatch[1];
-  const result = generateArticleResponse(article);
+  // Используем новый модуль для поиска товаров
+  const result = generateProductResponse(command);
   
   if (!result.found) {
     return generateResponse(
-      result.response + getActiveReminder(),
+      result.response + " " + getActiveReminder(),
       false
     );
   }
   
   return generateResponse(
-    result.response + getActiveReminder(),
+    result.response + " " + getActiveReminder(),
     false
   );
 }

@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { formatPriceForSpeech } = require('./priceFormatter');
 
-// Загружаем данные о диванах
+// ВАЖНО: Этот модуль устарел и оставлен для обратной совместимости
+// Используйте productSearch.js для новой функциональности
+
+// Загружаем данные о диванах (старая функциональность)
 let divansData = null;
 
 function loadDivansData() {
@@ -11,7 +14,7 @@ function loadDivansData() {
       const dataPath = path.join(__dirname, '..', 'data', 'divans.json');
       const rawData = fs.readFileSync(dataPath, 'utf8');
       divansData = JSON.parse(rawData);
-      console.log(`Загружено ${divansData.length} товаров`);
+      console.log(`Загружено ${divansData.length} товаров из divans.json`);
     } catch (error) {
       console.error('Ошибка загрузки данных о диванах:', error);
       divansData = [];
