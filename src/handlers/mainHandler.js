@@ -198,13 +198,21 @@ function handleDivanSearch(command, body) {
   
   // Только для колонок Диван 1 и Диван 2
   if (location !== 'divans1' && location !== 'divans2') {
-    return generateResponse("Извините, я могу рассказать о диванах только в зоне диванов.", false);
+    return generateResponse(
+      "Извините, я могу рассказать о диванах только в зоне диванов. " +
+      "Но вы можете назвать артикул товара — я найду его из любой зоны! " +
+      getActiveReminder(), 
+      false
+    );
   }
   
   const result = generateDivanResponse(command);
   
   if (!result.found) {
-    return generateResponse(result.response + ' ' + getActiveReminder(), false);
+    return generateResponse(
+      result.response + ' Попробуйте назвать артикул товара — я точно найду! ' + getActiveReminder(), 
+      false
+    );
   }
   
   return generateResponse(result.response, false);
@@ -215,13 +223,21 @@ function handleMatrasSearch(command, body) {
   
   // Только для колонки Матрасы 1
   if (location !== 'matrasy1') {
-    return generateResponse("Тут такие классные матрасы, я еще сонная, не поняла ваш вопрос.", false);
+    return generateResponse(
+      "Тут такие классные матрасы, я еще сонная, не поняла ваш вопрос. " +
+      "Может назовёте артикул? Я точно найду! " +
+      getActiveReminder(), 
+      false
+    );
   }
   
   const result = generateMatrasResponse(command);
   
   if (!result.found) {
-    return generateResponse(result.response + ' ' + getActiveReminder(), false);
+    return generateResponse(
+      result.response + ' Попробуйте назвать артикул товара — я точно найду! ' + getActiveReminder(), 
+      false
+    );
   }
   
   return generateResponse(result.response, false);
