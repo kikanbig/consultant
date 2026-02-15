@@ -110,8 +110,8 @@ function extractArticle(command) {
   // Преобразуем слова в цифры
   const converted = convertWordsToDigits(command);
   
-  // Убираем все пробелы между цифрами для извлечения артикула
-  const digitsOnly = converted.replace(/\s+/g, '');
+  // Убираем все пробелы и дефисы между цифрами для извлечения артикула
+  const digitsOnly = converted.replace(/[\s\-]+/g, '');
   
   // Ищем последовательность цифр (минимум 5 цифр, максимум 10)
   const patterns = [
