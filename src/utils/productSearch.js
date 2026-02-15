@@ -175,13 +175,12 @@ function generateProductDescription(product) {
   
   let description = '';
   
-  // Слой A — идентификация (всегда)
-  const articleForSpeech = formatArticleForSpeech(product['Код товара']);
-  description += `По коду ${articleForSpeech} — товар: ${product['Название']}.`;
+  // Слой A — идентификация (название товара без повторения кода)
+  description += `${product['Название']}.`;
   
-  // Слой B — описание (главное)
+  // Слой B — описание (главное, без слова "Коротко")
   if (product['Описание (для Алисы)']) {
-    description += ` Коротко: ${product['Описание (для Алисы)']}.`;
+    description += ` ${product['Описание (для Алисы)']}.`;
   }
   
   // Слой C — факты (3–5 максимум, только если заполнены)
